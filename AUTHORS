@@ -4,60 +4,65 @@ Contributors are sorted by their amount of commits / translated words.
 
 Contributors:
  Jim
- Palana
  jpark37
- cg2121
+ Palana
  R1CH
+ cg2121
  fryshorts
  DDRBoxman
- Gol-D-Ace
  WizardCM
  Ryan Foster
+ Gol-D-Ace
  BtbN
  Shaolin
+ Rodney
  kc5nra
+ Georges Basile Stavracas Neto
  Michael Fabian 'Xaymar' Dirks
  Kurt Kartaltepe
  pkv
- Rodney
- Zachary Lund
- Georges Basile Stavracas Neto
  VodBox
+ Zachary Lund
+ Sebastian Beckmann
+ Exeldro
  PatTheMav
  SuslikV
- Exeldro
+ tt2468
+ Warchamp7
  Reboot
  Martell Malone
  Ford Smith
  dodgepong
  HomeWorld
- Alex Anderson
  Joel Bethke
+ Alex Anderson
  SCG82
  brittneysclark
  Dmitry-Me
+ Norihiro Kamae
  juvester
- Sebastian Beckmann
+ Vainock
  Ed Maste
  JohannMG
  craftwar
  sorayuki
  Dead133
  Maya Venkatraman
+ Eric Lindvall
+ Jimi Huotari
  Radzaquiel
+ Scratch
  Socapex
  mntone
+ wangshaohui
  Cephas Reis
- Eric Lindvall
  Hector Martin
- Jimi Huotari
- Scratch
- Vainock
  Luke Yelavich
  Stéphane Lepin
+ Tommy Vercetti
  Marvin Scholz
+ Rat
  Skyler Lipthay
- tt2468
  Arkkis
  GoaLitiuM
  Hunter L. Allen
@@ -67,7 +72,8 @@ Contributors:
  Manuel Kroeber
  Michel
  Quinn Damerell
- Rat
+ tytan652
+ Anthony Torres
  Anton Bershanskiy
  Bennik2000
  Chris Angelico
@@ -77,23 +83,21 @@ Contributors:
  Kris Moore
  Palakis
  Tristan Matthews
- Warchamp7
- tytan652
+ Yuriy Chumak
+ columbarius
  Alexandre Vicenzi
- Anthony Torres
  Carl Fürstenberg
+ Florian Zwoch
  Kilian von Pflugk
+ Mike
  SoftArch
  Theodore Dubois
  Tjienta Vara
- Translation
- wangshaohui
  Aaron Boxer
  Anry
  Bilal Elmoussaoui
  CoDEmanX
  David Bieber
- Florian Zwoch
  Hosein
  Ioan Loosley
  Ján Mlynek
@@ -103,6 +107,7 @@ Contributors:
  makise-homura
  nleseul
  Alexander Popov
+ Artem Polishchuk
  Benjamin Klettbach
  Bird, Christopher
  Bl00drav3n
@@ -130,6 +135,8 @@ Contributors:
  shousa
  tlivegaming
  vokama
+ Adrián Pardini
+ Aidan Delaney
  Alex Miller
  Alexander Schittler
  Andreas Reischuck
@@ -145,6 +152,7 @@ Contributors:
  Farzad Karkhani
  Fred Emmott
  Gary Kramlich
+ Grant Likely
  Hans Petter Selasky
  Henrik "Henke37" Andersson
  Hernán
@@ -153,6 +161,7 @@ Contributors:
  Justin Bull
  Justin Love
  Jérémy Farnaud
+ Kasin Sparks
  Lexsus
  Lionheart Zhang
  Lordmau5
@@ -163,7 +172,6 @@ Contributors:
  Matthew McNamara
  MedicMomcilo
  Michael Goulet
- Mike
  Nirusu
  Olle Kelderman
  Piotr Esden-Tempski
@@ -171,10 +179,13 @@ Contributors:
  Skid-Inc
  Stéphane Cottin
  Take Vos
+ Tatsuyuki Ishi
  Taylor Blau
+ Thomas Schnitzler
  Tom Lynch
  Vadim Zhukov
  Warren Turkal
+ Willy Liu(HQ ENG)
  adray
  akapar
  astudios123
@@ -198,7 +209,6 @@ Contributors:
  Aarni Koskela
  Abelardo E. Mendoza
  Adit Sharda
- Adrián Pardini
  Aesen Vismea
  Afriza N. Arief
  Aidan Epstein
@@ -209,6 +219,7 @@ Contributors:
  Alexander Uhlmann
  Alexandre Biny
  Alexandre Paré
+ Alexis King
  Ali Kaviani
  Amin Shayan
  Andrew
@@ -228,12 +239,15 @@ Contributors:
  Bas van Meel
  Bazhenoff
  Beau Russell
+ Ben Alman
  Ben Bowler
  Ben Krueger
  Ben Stahl
  Benjamin Schubert
  Bernd Buschinski
  Biswapriyo Nath
+ Bob van de Vijver
+ Bruce Zhang
  Byoungchan Lee
  C. Daniel Sanchez R
  Caitlin Potter
@@ -241,8 +255,10 @@ Contributors:
  CallumHoward
  Cam
  Can Bal
+ Carlo Castoldi
  Cheeseness
  Christian Lockley
+ Christine Lin
  Christopher P. Yarger
  Christopher Serr
  CodeYan01
@@ -258,13 +274,17 @@ Contributors:
  David Baker
  David Edmundson
  David McMackins II
+ David Plappert
+ Delta
  Derrick Lambert
  Developer
+ Developer-Ecosystem-Engineering
  Devin Neal
  Dmitry Odintsov
  Dmitry Vovk
  Doug Ty
  Ed Ropple
+ Ek Palmer
  Emil Sayahi
  EpicCoder
  Ethan Lee
@@ -274,9 +294,9 @@ Contributors:
  Garrett
  GingerAudio
  Giorgio Pellero
- Grant Likely
  Gregory Luneau
  Grigorii Chirkov
+ Guang Zhou
  Guillermo A. Amaral
  Gökberk Yaltıraklı
  Haden F
@@ -288,6 +308,7 @@ Contributors:
  J Lynn
  J.D. Purcell
  Jake Probst
+ James Beddek
  James Hurley
  Jamy Timmermans
  Jason Francis
@@ -305,8 +326,8 @@ Contributors:
  Julian Miller
  Juliane Holzt
  Kacper Geisheimer
- Kasin Sparks
  Kazuki Oishi
+ Kazuki Yamaguchi
  Keith Packard
  Kevin Ross
  Kevin Tardif
@@ -316,6 +337,7 @@ Contributors:
  LiamCoal
  Linnun
  Lioncash
+ Lovecast Neil
  Lqlsoftware
  Lukas Monka
  Luke Granger-Brown
@@ -333,6 +355,8 @@ Contributors:
  Michael Hoang
  Mike So
  Mikhail Kochegarov
+ Morgan Rose
+ Morten Bøgeskov
  Murnux
  Nathan-Huckleberry
  Neal Gompa
@@ -342,6 +366,7 @@ Contributors:
  Oliver Lietz
  Olivier Humbert
  Patrick Ancillotti
+ Paul Hindt
  Per Heed
  Peter "Marenthyu" Fredebold
  Peter Eszlari
@@ -349,6 +374,7 @@ Contributors:
  Philip Loche
  Philipp Bauer
  Piotr Kubaj
+ Rafael Franco
  René Rebe
  Ricardo Constantino
  Richard Fontana
@@ -363,18 +389,18 @@ Contributors:
  Seth Murphy
  Seung-Woo Kim
  Shamun
+ Shlee
  Simon
  Sophie Hamilton
  Stanislav Izotov
  Steve Wills
- Tatsuyuki Ishi
  Teemu Kauhanen
  Terje Gundersen
  Thomas Crider
  Thomas De Schampheleire
  Thomas McGrew
+ Thomas Müller
  Thomas Picquet
- Thomas Schnitzler
  Thulinma
  Tim Vaca
  Toasterapp
@@ -382,6 +408,7 @@ Contributors:
  Tom Peeters
  Tom Pichler
  TotalCaesar659
+ Translation
  Uro
  Weikardzaena
  Will Jamieson
@@ -392,6 +419,7 @@ Contributors:
  Yves Dionne
  Yvo
  Ziemas
+ a1346054
  adocilesloth
  antho
  bluekirby0
@@ -409,6 +437,7 @@ Contributors:
  fefine
  fengyifan
  floele
+ furious
  geekenmd
  geemion
  guangong7628
@@ -421,8 +450,12 @@ Contributors:
  jbpratt78
  jeremiah
  ka’imi
+ kiwialec
+ kokole
  lemmi
+ liu.haibin
  lorskun
+ lucha
  luz.paz
  mape
  matoi974
@@ -441,12 +474,14 @@ Contributors:
  pongraczgabor87
  praveenkumar
  probonopd
+ qiongzai.sun
  raincomplex
  redcrazyheart
  repeat
  rkfg
  rpslack
  sam8641
+ sergey
  skyboy
  sunjingzhao
  thekrzos
@@ -455,6 +490,7 @@ Contributors:
  ty2570
  venepe
  vic
+ vishakh-h
  vividnightmare
  waffeln
  wang-bin
@@ -465,29 +501,26 @@ Contributors:
  windwakr
  yalpul
  yoho
+ zhaolong
  张昆
-
+ 
 Translators:
- Afrikaans:
-  Rory Townsend (f3emarketing)
-  Samuel Nthoroane (Samuel_Nthoroane)
-  speedytechdev
-  Vainock
-  Gol D. Ace (goldace)
  Albanian:
   Aredio Vani (aredio.vani)
   Albin Pllana (albinnpllanaa)
   Begi Ganellari (begiganellari1997)
   avnidj
   unknowndomain
+  Vainock
   Gol D. Ace (goldace)
  Arabic:
   ZILZAL
+  Tareq Almutairi (Tareq_s)
   Abdullah AL-Qahtani (Za7ef_SA)
   majdcomp
-  Tareq Almutairi (Tareq_s)
   Fady Adal (fadyadal)
   aaakjt
+  yngams (younessmouhid)
   AiAF (7MR)
   ibrahim younis (gr33v)
   E3saR (e3sa_r)
@@ -495,10 +528,13 @@ Translators:
   Mohamed Zain (Thecheeseman)
   Vainock
   Gol D. Ace (goldace)
+  omar al_hasasneh (omar.alhasasneh)
   Saleh oukiki (salehoukiki)
+  Sami Kamal (samixgames)
   Ahmad Alkurbi (DontPlay)
   Tensai
   Mustafa2018
+  Ahmed (FiberAhmed)
   BeleganStartup
   Ndalabo Taema (hake_bsowq)
   Fahad Alshaya (fashaya)
@@ -509,27 +545,36 @@ Translators:
   BWU Wheelman (Wheelman)
   FC Barcelona HD (kurdnews)
   osmansalih (hpcplus2016)
-  Yhea Ahmad (yhea.ahmad7741)
   unknowndomain
+  Yhea Ahmad (yhea.ahmad7741)
   Ahmed Hawam (Hawam)
+  Mhd (thelord9200)
+  sadam2002 sadam4 (sadam2002sadam4)
   Malaz Gold Edition (Malo7zz)
   Hosein Hallavi (habibot81)
+  Rex_sa (rex07)
   Mnsor The-Ghost (mnsor1722011)
   dodgepong
   chaironeko
   Hadi Gamer (hadigamer3131)
  Aragonese:
   juanpabl
+  Vainock
  Azerbaijani:
   ShahinF27 (Khan27)
+  Mirsahin Mirserifov (mirsahin.mirsarifov)
+  Sədi Məmmədov (sedi9816)
+  Şamil Veliyev (TheShamil035)
   Javid-An
   unknowndomain
+  Vainock
   Kənan Axundov (kenanaxundov2)
  Bashkir:
   Әлмәт Ак Арыслан (19082004amir)
   Bashquart (RadMir2)
   Synbulat Biishev (Syjalo)
   unknowndomain
+  Vainock
  Basque:
   Alexander Gabilondo (alexgabi)
   Xabier Aramendi (azpidatziak)
@@ -539,18 +584,20 @@ Translators:
   Gol D. Ace (goldace)
   EG Gamer (eggamer131)
   txaro
+  Galder L (315galder)
   etxondoko
   unknowndomain
-  Galder L (315galder)
   Fiwi1265
   dodgepong
  Bemba:
   P White (phiaramulima)
+  Vainock
  Bengali:
   Roktim Ibne Hasan (roktimih)
   shamuntohamd
   Saptarshi Mondal (gitSaptarshi)
   Vainock
+  C559 Raiyan :D (purebangali)
   Rudro Rasel (rdrrsl)
   Morshedul Alam (morshedintouch)
   Oymate
@@ -582,6 +629,7 @@ Translators:
   dodgepong
  Burmese:
   linwinthu
+  Vainock
  Catalan:
   Jaime Muñoz Martín (jmmartin_5)
   Benet R. i Camps (BennyBeat) (BennyBeat)
@@ -602,8 +650,8 @@ Translators:
  Chinese Simplified:
   Bob Liu (Akagi201)
   AlexGuo1998
-  wwj402_github
   fangzheng
+  wwj402_github
   Origami
   Hexcolyte
   AthlonHD
@@ -624,7 +672,7 @@ Translators:
   Inku Xuan (inkuxuan)
   Yi-Jyun Pan (pan93412)
   yunluzhang
-  lovelycandyowo (candysweetplayzmc)
+  そらSora (candysweetplayzmc)
   copyliu
   Boyuan Yang (073plan)
   Richard Stanway (r1ch)
@@ -632,11 +680,12 @@ Translators:
   Bing Feng (fengbing123)
   jyc001
   科技小白堂 (lipeng0820)
-  pangbin
   WeiYuanStudio
+  pangbin
   unknowndomain
-  WaterOtaku
+  Vince Black (vincejudge00)
   sorayuki
+  WaterOtaku
   dodgepong
   Haoran Du (bingchuanjuzi)
   OYYZ
@@ -690,8 +739,8 @@ Translators:
   chaironeko
  Croatian:
   medicmomcilo
-  srdjan_m
   milotype
+  srdjan_m
   Fran Kelava (fkelava)
   schwabengeiz
   Runicar (dajtisina)
@@ -713,13 +762,14 @@ Translators:
   Vainock
   X3r1k (x3r1k)
   Stewio MC (stepandolsky)
+  Šimon Bartoš (TyphousCrane654)
   Gol D. Ace (goldace)
   JIMMY (vopasek)
   Kiznoh
   Sawanyo
   MrJaroslavik
-  TheWolfiKK
   Soviet Bear (cheatercz123)
+  TheWolfiKK
   Marilok
   Bazer47
   unknowndomain
@@ -739,34 +789,37 @@ Translators:
   Anders Urban (minikaliffen)
   Richard Stanway (r1ch)
   Kenneth Nielsen (kenneth.nielsen)
+  Lukas Wiinholt (LukasW1337)
   Marque Ziqulr (lugtelort)
-  Johan Keller Jensen (JKeller)
   Hero (HeroGamers)
+  Johan Keller Jensen (JKeller)
   Christian Henriksen (cnhenriksen)
   unknowndomain
-  Nicolai Skødt Holmgaard (Nicolai9852)
   Daniel Aundal (aundal)
   dodgepong
  Dutch:
   Eric Bataille (ThoNohT)
   A. Voogt (atvoogt)
+  Harm van den Hoek (harm27)
   Michel Snippe (michelsnippe)
   Greendweller
   exeldro
   Albakham (albakham)
-  Harm van den Hoek (harm27)
   Lars Acou (lars.acou)
-  Coen (Trigstur)
+  Trigstur
   Danny (Dkamps18)
   Richard Stanway (r1ch)
   Nicole (Dutchess_Nicole)
+  theking2
   robbert0891 (robbertoorschot38)
-  Gol D. Ace (goldace)
   Kjetil Verstrepen (kjetilv)
-  Jasper J (JassieJ)
+  Gol D. Ace (goldace)
   Vainock
+  Jasper J (JassieJ)
   b__dm
   Lars van Wijk (lhjvanwijk98)
+  Issa1553
+  Rian Daan (drriandaan)
   Chunlu chunnyluny (Chunnyluny)
   Bond-009
   LiveDuivenVelp
@@ -776,16 +829,16 @@ Translators:
   andymidside
   F_Producktions
   Thom Knepper (MrKnepp)
+  lokerhp
   Lesley Natrop (lesleynatrop)
   Wouter Dijkman (Wjouter)
   Bo Alsemgeest (bo.alsemgeest.wausie)
-  lokerhp
   unknowndomain
   JorRy
   Julian Meijboom (julianmeijboom)
   RyyzQ
-  Mees (MeesJ)
   JustMaffie
+  Mees (MeesJ)
   Roeland Kussé (roeland)
   dodgepong
  English, United Kingdom:
@@ -793,18 +846,24 @@ Translators:
   unknowndomain
   matwey
   Vainock
+  Seb King (spud)
+  Endo (Balisong)
+  Issa1553
   Amy (amyipdev)
   Noah Husby (noahhusby)
   rooban23
+  Evan Kummel (EvanK)
   Ed L (Rexogamer)
   Endysis
-  'lisong (Balisong)
-  Issa1553
+  GarbageAtSB
   Roktim Ibne Hasan (roktimih)
   Pete Russell (pete.russell.photos)
  Esperanto:
   Matt Aaldenberg (MattAalden)
+  zer0ne (Rezoni)
   webklaas
+  kresten Sckerl (kressckerl)
+  siamano
   Vainock
  Estonian:
   MartinEwing
@@ -822,33 +881,37 @@ Translators:
   dwaeji-aizelle
   nyakayed
   CodeYan01
+  Napstaguy04
   Loyd Stephen Jayme (loydjayme25)
   jermel
-  Napstaguy04
   Raffy (Tested)
   Gol D. Ace (goldace)
   Vainock
   arnoldsecret
   Hagen Peter Marquez (HAJDog247)
+  Kian Mortel (Footmark)
   Raylir
   unknowndomain
+  atomicfart2009
   Jake Llabres Rabelas (rabelasj)
  Finnish:
   Arkkis (j)
   supersingularisogeny
   Jarska
+  Jiri Grönroos (spammemoreplease)
   dodgepong
   Tero Keso (tero.keso)
+  Hemmuli X (hemmulix)
   Gol D. Ace (goldace)
   Vainock
   Pyscowicz
   sZnvARmNaq
-  Hemmuli X (hemmulix)
   Obama (Obama44)
   YummyTomatoes
   MCPE-1
   unknowndomain
   Xupie
+  Operative Block (Suo)
   Ville Närhi (daimaah)
   Jaakko Saarikko (saarikko)
   Arttu Ylhävuori (arttu.ylhavuori)
@@ -857,9 +920,9 @@ Translators:
   pkviet
   Stéphane Lepin (Palakis)
   ArsTechnis
+  Guillaume Turchini (orion78fr)
   Tocram2 (tocram2)
   Benjamin Cambour (lesinfox)
-  Guillaume Turchini (orion78fr)
   Yberion
   Léo (leeo97one)
   RisedSky
@@ -872,6 +935,7 @@ Translators:
   Vainock
   DarkInFire
   Theguiguix
+  MrAngelos6
   Gol D. Ace (goldace)
   Youtubeur FR│Giaco35 (Giaco35)
   steve_fr
@@ -890,12 +954,13 @@ Translators:
   🌠 DarK | #Hello 🌠 (DarKTV_FR)
   Mathieu Hautebas (matteyeux)
   leluk
+  Gabriel Dugny (Dugab)
   tytan652
   Yolopix
   tburette
-  Gabriel Dugny (Gabigabigo)
   Adrien “GameZone Tv” de Decker (redcraft007)
   Richard Stanway (r1ch)
+  Evan Kummel (EvanK)
   Zalki
   SkytAsul (skytasul)
   Alexis Brandner (Alexinfos)
@@ -905,20 +970,20 @@ Translators:
   Jean-Mathieu Jm Samson (sjm450666)
   Lexane Sirac (Exilexi)
   Wizi_89
-  Arzugar
   Dredd47
+  Arzugar
   Albakham (albakham)
-  HistoriCode97
   Mathieu Goossens (matgoossens)
+  HistoriCode97
   SkylixX
   Nicolas Richard (YoungFrog)
   Warchamp7
-  chaironeko
   Lucas Juif (trycarnage)
+  chaironeko
  Galician:
   mbouzada
   Xesús M. Mosquera Carregal (xesusmosquera)
-  Iváns (Ivans_translator)
+  Galician Translator (Galician_translator)
   Vainock
   Gol D. Ace (goldace)
   unknowndomain
@@ -937,8 +1002,8 @@ Translators:
   Gol D. Ace (goldace)
   Michael Fabian Dirks (Xaymar)
   Sven Kirschbaum (fallobst22) (fallobst22)
-  Gregor Bigalke (gregtcltk)
   Dennis Giebert (Isegrim) (isegrimderwolf)
+  Gregor Bigalke (gregtcltk)
   dodgepong
   Manuel (ElectronicWar)
   Tim (robske_110) (robske110)
@@ -947,26 +1012,31 @@ Translators:
   mdod
   Benjamin Klettbach (benklett)
   cryxgio
+  gxalpha
   Jonas Otto (jottosmail)
   WurstOnAir
+  Holger Sinn (Holger-Sinn)
+  yojixe
   The_Legend_of_xD
+  Luchx
   Richard Stanway (r1ch)
   Palana
   Jonathan (macburgerjunior)
   Achampnator
   Enderdrache LP (enderdrachelp)
   Prince_of_Raop
-  unknowndomain
   Robin Hielscher (Jack0r)
+  unknowndomain
   Patrick Frings (Ragnos)
   css
-  AndreLeonardo (andreleonardoyt)
+  Dav321 (Dav32_1)
   Lord Aidan (BadSideofBright)
+  AndreLeonardo (andreleonardoyt)
   BoJustus
-  hakuchi
-  degra78 (degra789)
-  Tiim
   Hadi Gamer (hadigamer3131)
+  hakuchi
+  Tiim
+  degra78 (degra789)
  Greek:
   swatzniker (dimitrisrtg324)
   Katerina (katerinaramm)
@@ -977,32 +1047,37 @@ Translators:
   Tasos Sahanidis (tatokis)
   George T. (tzikas97)
   Nikolaos Peltekis (nikpelgr)
+  Greek Transliterator (greektransliterator)
   Vainock
   Qufy
   Alex Kalles (alexakis1997)
   Ανδρέας Γεωργόπουλος (andrewgeo)
   Kostas F (Kostas-F)
   Warmaster
+  Jim Spentzos (dspentzos)
   Gol D. Ace (goldace)
   iosifidis
   Giorgos (Bald)
   Themis T. (Deminho)
-  Jason_M
   unknowndomain
-  dodgepong
+  Jason_M
+  Antwnhs M. (AntwnhsM.)
   Christis Andreou (ch.andreou)
+  dodgepong
   chaironeko
  Hebrew:
   amirsher
   Omer I.S. (omeritzics)
-  lonelywolf11
   djsavta
+  lonelywolf11
+  Yaron Shahrabani (YaronSh)
   idanbo27
   עידו דנה (idodana01)
   nachmanpop
   teddy vadmad (dubonchik)
   Vainock
   Yotam Ziv (yotamziv87)
+  Ethan (EthanDevelop)
   Green Army (ofek18)
   Chemi
   Gol D. Ace (goldace)
@@ -1023,44 +1098,48 @@ Translators:
   Tal Machani (talmachani)
  Hindi:
   Bashishtha Narayan Singh (bashishtha)
+  Creeper (ThisIsACreeper0101)
   Saswata Banerjee (azure.saswata)
+  BIJAY NAYAK (bijaykumar)
   Ravindra Pednekar (raviped)
   Rahul Dhangar (rahuldhangar)
   SneakyFish5
   shamuntohamd
+  Vainock
   Sid-Shanker
   unknowndomain
-  Vainock
   Gol D. Ace (goldace)
  Hungarian:
   Gige
   Balázs Meskó (mesko.balazs)
+  Balázs Meskó (meskobalazs)
   Gol D. Ace (goldace)
   Sárga Pulcsis (SargaPulcsis)
   zolikonta
   ItzAndriss
-  Vainock
   Dániel P. (Daniii_)
+  Vainock
   Isti (eisti)
-  Balázs Meskó (meskobalazs)
   TOM005
   Adam Liszkai (adamos42)
+  IrepY
   vargag159
   Biró Bence (birobence19)
   unknowndomain
   abydosan (abydoshun)
   dodgepong
- Igbo:
-  EzigboOmenana
  Indonesian:
   M Akmal (akmalcakep59)
   Anbiya Shafaat (Anfia)
   Rafy Shafryan (NexaForX)
+  heydootdoot
   Rendi (rendiazmi)
   Lieba Natur Brilian (naturbrilian)
   ziasukmana
   Vainock
   GudankGaming GG (GudankGaming)
+  Agustine Carolina (agustinecarolina483)
+  Rahman Yusri Aftian (aftian)
   dnpxs (Dnoxs)
   Deraidos
   doplank
@@ -1072,17 +1151,18 @@ Translators:
   Marocco2
   tiwi90
   imcesca
+  StarFang208
   smart2128
   Sergio Beneduce (sbeneduce)
   Michele (ScrappyCocco)
   Albakham (albakham)
-  StarFang208
+  ROBERTO BORIOTTI (bovirus)
   dodgepong
   Marco Ciampa (ciampix)
   Alessandro Sarto (alesarto03)
   Tommaso Cammelli (tomganguz) (tomganguz)
   Vainock
-  Christian Mazzola (_Alpha06)
+  Christian Mazzola (Alphaaa)
   Martazza
   mauriziopersi
   ScemEnzo
@@ -1096,31 +1176,32 @@ Translators:
   Silpheel
   gianni morandi (strabbioboy)
   Giulia (GhostyJade)
-  Fisherozzo
+  Ruggero Tomaselli (ruggi99)
   DomenicoDD
+  Fisherozzo
   Androide Umano (androide012340)
   icovada
   Alessio Ilardi (alantheandroid)
-  ROBERTO BORIOTTI (bovirus)
   SkyLion
   Cristian Alfano (cal332)
-  Ruggero Tomaselli (ruggi99)
-  Benedetto Mazza (benedetto.mazza99)
+  Clarensio
+  Lucia Spinello (Freya89)
   unknowndomain
+  Benedetto Mazza (benedetto.mazza99)
   Owly
   Federico Tensi (habby1337)
   NightMat
-  Alessandro Iepure (alessandro_iepure)
-  Daniele02_777
   Flavio Rinaldi (flaviorinaldi)
+  Daniele02_777
+  Alessandro Iepure (alessandro_iepure)
  Japanese:
   shousa
   Kenta Takumi (ClaraStyle)
   Bhanu Victor DiCara (SplatRT)
+  青柳和宏 (sherlock1891holmes)
   saygo1125
   dodgepong
   森の子リスのミーコの大冒険 (Phroneris)
-  青柳和宏 (sherlock1891holmes)
   CKK COBALT (CKKCOBALT)
   Vainock
   kotobato
@@ -1129,31 +1210,38 @@ Translators:
   ato lash (hal_shu_sato)
   unknowndomain
   神成フィルム (kami00nari)
+  GO Channel (georgestv.0129)
   ? (a2y4)
   Bob Liu (Akagi201)
-  Alex Shafer (enzanki-ars)
-  chaironeko
+  Diogo Ramos (dr03ramos)
   Yuki Yu (Yukiyu)
+  chaironeko
+  Alex Shafer (enzanki-ars)
+  ushu kura (kuraushu)
  Kabyle:
   Yacine Bouklif (YacineBouklif)
+  Vainock
   ZiriSut
   Slimane Selyan AMIRI (SelyanKab)
-  Vainock
  Khmer:
   thuonmohasal (thuon-mohasal)
   ប៉ុកណូ រ៉ូយ៉ាល់ (poknoroyal68)
   បងមាន តែអូន (cheaiphone267)
   Vainock
+  dodgepong
   Gol D. Ace (goldace)
  Korean:
   ynetwork
   Alex Lee (alex01763)
   임세훈 (shlim)
-  Vainock
+  vyteking
   AlexKoala (alexkoala)
+  영구땡 (wonkyupark)
+  Vainock
+  DNSE (dnse)
   Gol D. Ace (goldace)
   RedditRook
-  DNSE (dnse)
+  켈빈926 (hsjang2000)
   Jong Kwon Choi (dailypro)
   Ra.Workspace (RaWouk)
   무아MUA (moajikyeongtv1048)
@@ -1168,19 +1256,21 @@ Translators:
   swatzniker (dimitrisrtg324)
   김동현 (ehehguu)
   dodgepong
- Kurdish:
-  Omer Kurdish (OmerKurd)
-  fantic
+ Kurmanji (Kurdish):
   cehnemdark
+  Cyax (Cyaxares)
   Vainock
-  RanjdarAbdulrazzaq
-  Aga Mangure (agaesmaeel)
  Lao:
   nirankoon.singpraseuth (nirankoon)
+  Vainock
+ Latvian:
+  oskars
  Lithuanian:
+  Viljamas (Vegas1)
   Justas Vilimas (tyntas)
   xNaii (lyrikas5)
   TitasK (titukas1572)
+  MarioDesigns
   Rolic
   Nikita Podvinskij (PODWINSKi)
   dnew (dbot)
@@ -1195,32 +1285,34 @@ Translators:
   amsyar ZeRo (amsyarminer555)
   WeingHong
   Srap Dsign (srapdsign)
+  AnNamir
   Gol D. Ace (goldace)
   Vainock
   unknowndomain
   dodgepong
  Mongolian:
   begjan
-  Bilguun Ochirbat (BilguunOch)
   Erhmee
+  Bilguun Ochirbat (BilguunOch)
   unknowndomain
   Vainock
   Gol D. Ace (goldace)
  Norwegian Bokmal:
   Imre Kristoffer Eilertsen (DandelionSprout)
   Taesh (magnusmbratteng)
+  flaeri
   Patrick Williamson (wpatrick59)
   Oddbjørn Grytdal (Fooshi)
   Mats Edvin Aarø (matsedvin)
   dodgepong
   LandyLERThERmfLOpi
   areedw
-  flaeri
+  TrymSan
   mgKaiztra
   Tommy (nwgat)
   Vainock
   Jordan Stutzmann (J-Stutzmann)
-  Syver Stensholt (sssandum)
+  Syver Stensholt (7RST1)
   Alex Thomassen (Decicus)
   Sander Skjegstad (r530er)
   Gol D. Ace (goldace)
@@ -1228,10 +1320,12 @@ Translators:
   OsteHovel
   Lauren (hobtan)
   Legend27
+  Pederva
   unknowndomain
   chaironeko
   Mats Andreassen (MatsA)
  Norwegian Nynorsk:
+  Bjørn I. (bjorni)
   Imre Kristoffer Eilertsen (DandelionSprout)
   Eiliv
   morden
@@ -1239,49 +1333,33 @@ Translators:
   unknowndomain
   Yngve Spjeld Landro (yslandro)
   Gol D. Ace (goldace)
+  Vainock
  Occitan:
   Diluns
+  Vainock
  Persian:
   Johnny Warner (johhnywarner)
   koper
   MZ MAXIMUM (mahdigamermax)
   AmirGhorbani_ir
+  ahangarha
   Pikhosh (pikhoshorg)
   peymanr34
   Vainock
   TiXO
+  Danial Behzadi (danialbehzadi)
   Mohammad jawad (mrahmani788)
   Farshid Meidani (farshid_mi)
   Gol D. Ace (goldace)
+  alefvanoon
   Hosein Hallavi (habibot81)
   Berrely
   unknowndomain
-  alefvanoon
   nohaxjustoof
+  XubeIR
   Navid Sadeghieh (nsadeghieh)
   Amirhossein yousefi (amir.sara)
- Pirate English:
-  NLBartley1
-  Matt Gajownik (WizardCM)
-  ljcool2006
-  Matthew Hatcher (MatthewSH)
-  Amy (amyipdev)
-  Uaiquqjwnsns
-  Isabel L (isabel_)
-  Vainock
-  jkcoaster
-  Héctor Ochoa Ortiz (Robot8A)
-  Coen (Trigstur)
-  Charlie W. (wallichc)
-  unknowndomain
-  Emu-Phoenix
-  WaterWater32
-  Gol D. Ace (goldace)
-  iltrof
-  Berrely
-  Lol Wut (OldGrandmaFarts)
-  chaironeko
-  ncb
+  MohammadSaleh Kamyab (mskf1383)
  Polish:
   Tomasz 'grocal' Grodzki (grocal)
   Albakham (albakham)
@@ -1291,29 +1369,32 @@ Translators:
   Damian Korcz (damikiller)
   Łukasz Wójcik (lwojcik)
   Vainock
+  Hexandcube (hexandcube)
   Daniel Wieczorek (Kennyluz)
   sebek1pan
   Mateusz (Silesianek)
   Gol D. Ace (goldace)
+  _kaktus_
   opl
   Popke
   Skajdrovski
-  Hexandcube (hexandcube)
   Michal (progamesmicrok)
   unknowndomain
   Piteriuz
   mjluszko
+  Hubert Degler (Hubertoos)
+  adamek2314
   dodgepong
   Julia Drewniak (ewagsi)
-  Patryk Kunda (ner.i.ol)
-  Michał Lewczak (michal200507)
   Maciej Błędkowski (mble)
+  Patryk Kunda (ner.i.ol)
   Nojterone
+  Michał Lewczak (michal200507)
  Portuguese:
-  Pedro Albuquerque (pmra)
+  horus68
   Ev1lbl0w
   joaofvieira
-  polystation4
+  batatasmor
   Manuela Silva (mansil)
   André Biscaia (LazP)
   Tomás Antunes (tomasantunes)
@@ -1337,12 +1418,12 @@ Translators:
  Portuguese, Brazilian:
   Shaolin (admshao)
   Diogo Ramos (dr03ramos)
+  Skellingtor
   Ramon Mendes (rbrgameplays)
   Fabio Madia (Shaolin)
   Burkes
   Emanoel Lopes (emanoelopes)
   Pedro Ricardo (Pedro270707)
-  Skellingtor
   Guilherme Dias (Darkaiser)
   Lincoln H. (LincolnH)
   TFSThiagoBR98
@@ -1358,29 +1439,35 @@ Translators:
   Gol D. Ace (goldace)
   LoboMetalurgico
   mathues
+  Matheus Fongaro (matheus.fongaro)
+  Hustuha
   maribatis
   Diego Ramos (Maneschy)
   DanielTaqueto
+  JNylson
   lakitoo
+  Tetri Mesquita Neto (tetri)
+  ghklug
   DevilLorde
   João (fror)
   unknowndomain
-  Esdras Tarsis (esdrastarsis)
   Ramon Gonzalez (ramon200000)
-  Miguel Balbo Victor (miguelbalbovictor)
+  Esdras Tarsis (esdrastarsis)
   Guilherme Cruz (gcrz)
+  Miguel Balbo Victor (miguelbalbovictor)
   Eduardo Addad de Oliveira - Eduaddad (eduardoaddad)
   dodgepong
-  Finhawk
-  ghklug
-  dlageBR
-  andre.krdoso
+  Guimaverick
   park (TheBugMeNot)
+  dlageBR
+  Finhawk
+  andre.krdoso
   Tiago Danin (TiagoDanin)
  Punjabi:
   manjotsingh0202
   unknowndomain
   Sheikh Ahmed (sheikhahmed)
+  Vainock
  Romanian:
   Cristian Silaghi (sno_w)
   Kele Ion Ion (krovyoll)
@@ -1389,6 +1476,7 @@ Translators:
   Hisashi
   Andrei Ionescu (abcdedjdmddx)
   BlakeNowah
+  Doru Stoica (dorusto)
   Victor Paul (corvinpaul)
   Skellytone
   Mihai G (babasghenciu)
@@ -1398,6 +1486,7 @@ Translators:
   LupusMechanicus
   Voie Tudor (tudorvoie2008)
   Andrii Popovych (Andrii-Popovich)
+  Sw3aty1 Cristi (ca1510797)
   unknowndomain
   Diamyx
   alex123 alex123 (dumitruvalentin44)
@@ -1411,85 +1500,94 @@ Translators:
   Pavel (Shevalie)
   VNGXR
   Bugo
+  Әлмәт Ак Арыслан (19082004amir)
   MaximGribanov
   dodgepong
   Vainock
+  Fitik
   Gol D. Ace (goldace)
-  Әлмәт Ак Арыслан (19082004amir)
-  Runoff Screen (glebpozbnakov62)
-  Artem4ik
+  Artem (Artem4ik)
+  GP (legionerri)
+  Vik (ViktorOn)
   Yaroslav (MrYadro)
   css
-  fromgate
+  Kolya Майнкрафт (KolyaYT_)
   Пахомов Александр (GXTrus)
+  fromgate
   Synbulat Biishev (Syjalo)
   Sirboys
   Антон Илясов (Vewa9907)
-  Andy (anry025)
+  WoWnik (wownik98)
   VikHill
   er123rin (se123rin)
-  WoWnik (wownik98)
+  Andy (anry025)
   Nemesis (Nemesis07)
+  NEO FEED (srdsafdsfsdfsdfsdgdfh)
+  Просто Взут (JustVzyt)
   Blueberry (Blueberryy)
   Zonega
   bxkr
-  Serge Sklyarov (sergesklyarov)
   Utoog (rivus)
+  Serge Sklyarov (sergesklyarov)
   Андрей Курдюков (sandrix)
   Anton Bershanskiy (bershanskiy)
   Makatavin # (makatavin0)
   HSD Channel (kvdbve34)
+  slicht
   Mr Misha (MrMisha)
   Nikita Epifanov (Nikets)
   Fik Dencer (4Soul)
   ExZo
   Vlad (KoTmaxHo)
   Vladimir (jeffors)
-  Artjom Jemeljanov (artjom3729)
   RaspingMango (RaspingMango637)
   Myasko
   Mikhail Paulyshka (Mixaill)
-  Виктор (ViktorOn)
-  Super 2004 (pe86ki)
   Иван Геймеров (hronos-2t)
+  Super 2004 (pe86ki)
+  Дима Исаев (dima.isaev2005)
   Nikita Bibanaev (nicky18013)
   Sergei Fug1t1v3 (fug)
+  pavuma
   Максим Куренков (kuplay)
   Цезарь Ролл (CeaserRoll)
   Walt Gee (vovanych)
+  unknowndomain
   Илья Кузнецов (ilyavj)
   zy9c 1337 (zy9c228)
-  unknowndomain
-  Ninja Hacker3000 (ninjahacker3875)
   allan walpy (AndreyLysenkov)
+  Ninja Hacker3000 (ninjahacker3875)
   Drahonn
   Mr. Games (oohskofgs)
-  Yuri Mihaqlov (yurijmi)
-  Meldone (meldone)
   BeDubber
+  Yuri Mihaqlov (yurijmi)
   SandoBY
-  Alex Pavliuk (TheDustyy)
+  Meldone (meldone)
   Anatoly (Atsupak)
+  Nezila Nez (Nezila)
+  Oleksandr Pavliuk (TheDustyy)
   Leika098
   Kcurett TM (thekcurett)
-  Sigge Stjärnholm (Kladdy)
-  TR1D
-  mchg _ (mchg)
-  Evgeny Bogdanov (vtrifonov548)
-  TOWUK (towuk)
   iLefty
+  TR1D
+  Evgeny Bogdanov (vtrifonov548)
+  mchg _ (mchg)
+  TOWUK (towuk)
+  Sigge Stjärnholm (Kladdy)
+  Kirill Arkhipov (dokl957)
   MeoWStraY
   Kuji Kitamura (KujiKita)
-  Kirill Arkhipov (dokl957)
   MUHADDIS MEDIA (muhaddismedia)
  Scottish Gaelic:
   GunChleoc
   Vainock
+  Endo (Balisong)
   unknowndomain
   Gol D. Ace (goldace)
  Serbian (Cyrillic):
   nikolanikola
   medicmomcilo
+  Анониман (anonymousprivate76)
   Vainock
   lukazivanovic
   Acamicamacaraca
@@ -1511,9 +1609,14 @@ Translators:
   unknowndomain
   dodgepong
   scienceangel
+ Silesian:
+  Psioczek
+  Vainock
  Sinhala:
-  rpu ysam (rpuyasi)
+  නිම්නය (nimnaya)
   Store (HelaBasa)
+  rpu ysam (rpuyasi)
+  Vainock
  Slovak:
   Lukáš Čeremeta (luki1412)
   Erik Bročko (ericek111)
@@ -1522,7 +1625,7 @@ Translators:
   Anton Lokaj (anlo)
   Vainock
   Dániel P. (Daniii_)
-  Vladimír Krajč (mickkymouse)
+  Vladimír Krajč (mkkyy)
   TheWolfiKK
   Gol D. Ace (goldace)
   Miroslav Machala (Miroslav_Machala)
@@ -1544,8 +1647,8 @@ Translators:
   dodgepong
   FixyFN (nikolaj.ceferin)
  Spanish:
-  Marcos Vidal Martinez (M4RK22)
   Monsteer
+  Marcos Vidal Martinez (M4RK22)
   Jaime Martinez Rincon (mrjaime1999)
   Honzo (HonzoNebro)
   Jaime Muñoz Martín (jmmartin_5)
@@ -1553,28 +1656,33 @@ Translators:
   Alex E. D. B. (alexedb)
   EG Gamer (eggamer131)
   Pilar G. (TheMadnessLady)
-  Gol D. Ace (goldace)
-  Manuel Matías (manuel.matias)
   MarioMey
+  Gol D. Ace (goldace)
+  716gjesu
+  Manuel Matías (manuel.matias)
   Lluís R (LluisR98)
   Vainock
+  Alejandro Alzate Sanchez (alejandroalzate)
+  Adolfo Jayme (fitoschido)
   Maximiliano Schtroumpftech Pena-Roig (som2tokmynam)
   Carlos Plata (carlosesgenial33)
+  JaviermbPlays (JavierMB)
+  Gonzalo Lorenzo (Gxnzalo)
   eemiroj
   henrycontreras
   Skiddome (sergiomalagonmartin)
   Marcos Vidal (markitos.maki22)
   Ruben Deig Ramos (rdeigramos)
   Roriita
-  Ray (Ipsumry)
+  1 (Ipsumry)
   makiza1 (micosil_2)
   Santiago Pereyra (SannttVIII)
   jan (test83318)
-  Adolfo Jayme (fitoschido)
   David Sonico (davidsubsonico)
   Jokeestd
   AndMe (accomigt)
   Eleazar (MtrElee3)
+  GNosii (ElNosii)
   amssusgameplays (willifake052)
   Stephen Q (qstephen73)
   D E B (D_E_B)
@@ -1583,31 +1691,34 @@ Translators:
   Sigge Stjärnholm (Kladdy)
   Amy (amyipdev)
   jiseokss
-  Rodrigo Ipince (ipince)
   dodgepong
+  Rodrigo Ipince (ipince)
   Juan Esteban (Juanskeree)
   chaironeko
   Gloriana Cocozza (gcocozza)
-  Mogabie's Nation (Mogabie)
-  Alejandro Alzate Sanchez (alejandroalzate)
+  Streamlabs Translator (Streamlabs)
+  Hector meneses (hector.meneses)
   Rubén Pérez (RixzZ)
+  Charlie (Charlongolo)
+  Mogabie's Nation (Mogabie)
  Swedish:
   Anton R (FirePhoenix)
   Sigge Stjärnholm (Kladdy)
   Laccy IEST (Laccy)
   Bjorn Astrom (beeanyew)
   0x9fff00
+  LinusW
   Gustav Ekner (ekner)
   Vainock
   Victor Ahlin (VSwede)
   Mats Karlsson (matska)
   ArvidTheSwe
-  LinusW
   hentor5
   Olle Dahström (odahlstrom)
+  nahkampf
   Gol D. Ace (goldace)
-  unknowndomain
   Henrik Mattsson-Mårn (rchk)
+  unknowndomain
   Axel Aminoff (axel.aminoff)
   chaironeko
   Jonas Svensson (jonassanojj99)
@@ -1620,6 +1731,7 @@ Translators:
   jermel
   jbeguna04
   philiparniebinag
+  TheBMG Playz (thebmgplayzyt)
   Vainock
   Gol D. Ace (goldace)
   Red Dayao (steemitph)
@@ -1635,65 +1747,74 @@ Translators:
   Balamurugan Thayalan (balamurugan.th)
   unknowndomain
  Thai:
+  Yarika Sutthiwong (ammaneena)
+  เทพประสิทธิ์ โพลาหา (Thepprasit300150)
+  Alvah Connelly (AlvahConnelly)
   Slow Life (SlowLife)
   Nawin Somprasong (thaipirch98)
   zero0200
   ธีรภัทร์ โยชนา (2RD)
   sakuhanachan* (sakuhanachanloli)
   SurachaiJUI
-  Sakia Normal Human (arcanaarcana5)
   PolaX3
-  nongnoobjung (kitcharuk_4)
+  Sakia Normal Human (arcanaarcana5)
   盛凤阁 (execzero)
+  nongnoobjung (kitcharuk_4)
+  301-14 สิรวิชญ์ ศรีคําเมือง (Sam_Hanhyongsok2006)
+  Worawut Weerawan (nero.exe)
+  Vainock
   Rathchaarnon Threeanjuleethaan (rathchaarnon)
   unknowndomain
   แมน ทศพร (lovemanna456)
-  Vainock
   dodgepong
-  Ryan Gleeson (Ryan_7149)
   Gol D. Ace (goldace)
+  Ryan Gleeson (Ryan_7149)
  Turkish:
   monolifed
   Ali Kömesöğütlü (Mobile46) (byzlo685)
   omer.karagoz (mrkaragoz)
-  Cemal Dursun (cmldrs)
   vgezer
+  Cemal Dursun (cmldrs)
   Savas Tokmak (Laserist)
   Vainock
   Umut kılıç (kilic190787)
-  furkanbicici
+  Burak‏ Eker‏‏‏‏‏‏‎ (mburakeker)
   BreezeQS
+  furkanbicici
   keke_ea
+  MeskaX
   Murat Karagöz (anemon_1994)
+  Görkem Akova (gorkemakova)
+  Ebubekir Türker (ebubekirtrkr)
   Bilgehan Demirel (bilgehandemirel)
-  Gol D. Ace (goldace)
   Alperen Yıldız (Sparrow34)
+  Gol D. Ace (goldace)
   berkcan uçan (ibnehayati)
   Solusyon2
   gecebekcisi1
-  Emin Can OGUZ (emincanoguz11)
   Furkan Korhan (furkankorhan)
-  Ege Ölge (ekto)
+  Emin Can OGUZ (emincanoguz11)
+  inci (sluggishwitch)
   Tarık Coşkun (tarikcoskun)
   BedirhanGltkn (bedirhangltkn)
   Ege Uzun (kise5478)
   bkzspam
   Onur Yılmaz (Makaron3422)
-  Baran Moroğan (okunamayanad)
   TahaCelik
+  Baran Moroğan (okunamayanad)
   mustafaa
-  keremkt_
+  Batıkan Ökten (xdieofgo)
   Richard Stanway (r1ch)
   TimurOzcan
   Ömer (upp4r)
   Yıldırım Mehmet Nur (MehmetNY)
   Khedi
-  atamerco23
+  Ata Çağan Atamer (atamerco23)
   Hydroboost
   unknowndomain
   Mustafa Arslan (mstfaa)
-  Fatih Güneş (fatihgunes)
   Alican Gultekin (Vitaefinis)
+  Fatih Güneş (fatihgunes)
   Türker Yıldırım (turkeryildirim)
   Ip Logging Boi (Karatchi)
   Metehan Özyürek (MetehanOzyurek)
@@ -1712,19 +1833,21 @@ Translators:
   Lino Bico (bicolino34)
   Юрій (Devinit)
   Gol D. Ace (goldace)
-  kateryna.roiko
   Andy (anry025)
+  kateryna.roiko
   NoPressure
   បងមាន តែអូន (cheaiphone267)
   geimfis
   L1Q
-  Sergii Raboshchuk (Fallenbard)
   powerdef
+  Sergii Raboshchuk (Fallenbard)
   unknowndomain
   Andrii Khronenko (hran)
   skuu
-  Alex Pavliuk (TheDustyy)
   Maksym Tymoshyk (maximillian_)
+  Oleksandr Pavliuk (TheDustyy)
+  Володимир Родич (vrodych)
+  Mark Chorney (chorneymark2006)
   dodgepong
  Urdu (Pakistan):
   Sheikh Ahmed (sheikhahmed)
@@ -1733,10 +1856,11 @@ Translators:
   shamuntohamd
   unknowndomain
   Gol D. Ace (goldace)
+  Vainock
  Vietnamese:
+  IoeCmcomc (ioecmcomc)
   Johnny “max20091” Utah (boostyourprogram)
   Quang Nguyen (quangnguyen.25)
-  IoeCmcomc (ioecmcomc)
   Hưng Nguyễn (hoyostudio)
   ngoisaosang
   Dũng Nguyễn (CDzungx)
@@ -1749,12 +1873,13 @@ Translators:
   Bùi Xuân Hải (real.xuanhai)
   HUYwx (vodoanhuy301)
   Vainock
-  Shinoge
   rezarria
+  Shinoge
   unknowndomain
   Vũ Hải Tây (tayngungo1999)
   oranz21
-  V4Ki3t_VN
+  sharkie
   Dawkin Nguyen (dawkinit)
+  V4Ki3t_VN
   dodgepong
   NCAA

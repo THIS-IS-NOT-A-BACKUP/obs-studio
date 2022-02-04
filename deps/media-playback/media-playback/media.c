@@ -301,9 +301,13 @@ static inline int64_t mp_media_get_base_pts(mp_media_t *m)
 	return base_ts;
 }
 
+/* maximum timestamp variance in nanoseconds */
+#define MAX_TS_VAR 2000000000LL
+
 static inline bool mp_media_can_play_frame(mp_media_t *m, struct mp_decode *d)
 {
-	return d->frame_ready && d->frame_pts <= m->next_pts_ns;
+	return d->frame_ready && (d->frame_pts <= m->next_pts_ns ||
+				  (d->frame_pts - m->next_pts_ns > MAX_TS_VAR));
 }
 
 static void mp_media_next_audio(mp_media_t *m)
@@ -602,9 +606,15 @@ static int interrupt_callback(void *data)
 	return stop;
 }
 
+#define RIST_PROTO "rist"
+
 static bool init_avformat(mp_media_t *m)
 {
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(59, 0, 100)
 	AVInputFormat *format = NULL;
+#else
+	const AVInputFormat *format = NULL;
+#endif
 
 	if (m->format_name && *m->format_name) {
 		format = av_find_input_format(m->format_name);
@@ -616,7 +626,8 @@ static bool init_avformat(mp_media_t *m)
 	}
 
 	AVDictionary *opts = NULL;
-	if (m->buffering && !m->is_local_file)
+	bool is_rist = strncmp(m->path, RIST_PROTO, strlen(RIST_PROTO)) == 0;
+	if (m->buffering && !m->is_local_file && !is_rist)
 		av_dict_set_int(&opts, "buffer_size", m->buffering, 0);
 
 	m->fmt = avformat_alloc_context();

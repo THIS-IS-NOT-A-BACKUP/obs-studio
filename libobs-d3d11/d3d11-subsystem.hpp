@@ -25,8 +25,7 @@
 #include <memory>
 
 #include <windows.h>
-#include <dxgi.h>
-#include <dxgi1_2.h>
+#include <dxgi1_6.h>
 #include <d3d11_1.h>
 #include <d3dcompiler.h>
 
@@ -106,6 +105,8 @@ static inline DXGI_FORMAT ConvertGSTextureFormatResource(gs_color_format format)
 		return DXGI_FORMAT_B8G8R8X8_UNORM;
 	case GS_BGRA_UNORM:
 		return DXGI_FORMAT_B8G8R8A8_UNORM;
+	case GS_RG16:
+		return DXGI_FORMAT_R16G16_UNORM;
 	}
 
 	return DXGI_FORMAT_UNKNOWN;
@@ -185,6 +186,8 @@ static inline gs_color_format ConvertDXGITextureFormat(DXGI_FORMAT format)
 		return GS_BGRX_UNORM;
 	case DXGI_FORMAT_B8G8R8A8_UNORM:
 		return GS_BGRA_UNORM;
+	case DXGI_FORMAT_R16G16_UNORM:
+		return GS_RG16;
 	}
 
 	return GS_UNKNOWN;
@@ -280,6 +283,24 @@ static inline D3D11_BLEND ConvertGSBlendType(gs_blend_type type)
 	}
 
 	return D3D11_BLEND_ONE;
+}
+
+static inline D3D11_BLEND_OP ConvertGSBlendOpType(gs_blend_op_type type)
+{
+	switch (type) {
+	case GS_BLEND_OP_ADD:
+		return D3D11_BLEND_OP_ADD;
+	case GS_BLEND_OP_SUBTRACT:
+		return D3D11_BLEND_OP_SUBTRACT;
+	case GS_BLEND_OP_REVERSE_SUBTRACT:
+		return D3D11_BLEND_OP_REV_SUBTRACT;
+	case GS_BLEND_OP_MIN:
+		return D3D11_BLEND_OP_MIN;
+	case GS_BLEND_OP_MAX:
+		return D3D11_BLEND_OP_MAX;
+	}
+
+	return D3D11_BLEND_OP_ADD;
 }
 
 static inline D3D11_CULL_MODE ConvertGSCullMode(gs_cull_mode mode)
@@ -537,7 +558,8 @@ struct gs_texture_2d : gs_texture {
 
 	gs_texture_2d(gs_device_t *device, ID3D11Texture2D *nv12,
 		      uint32_t flags);
-	gs_texture_2d(gs_device_t *device, uint32_t handle);
+	gs_texture_2d(gs_device_t *device, uint32_t handle,
+		      bool ntHandle = false);
 	gs_texture_2d(gs_device_t *device, ID3D11Texture2D *obj);
 };
 
@@ -794,14 +816,15 @@ struct gs_pixel_shader : gs_shader {
 };
 
 struct gs_swap_chain : gs_obj {
-	uint32_t numBuffers;
 	HWND hwnd;
 	gs_init_data initData;
 	DXGI_SWAP_CHAIN_DESC swapDesc = {};
+	UINT presentFlags = 0;
 
 	gs_texture_2d target;
 	gs_zstencil_buffer zs;
 	ComPtr<IDXGISwapChain> swap;
+	HANDLE hWaitable = NULL;
 
 	void InitTarget(uint32_t cx, uint32_t cy);
 	void InitZStencilBuffer(uint32_t cx, uint32_t cy);
@@ -814,10 +837,15 @@ struct gs_swap_chain : gs_obj {
 	{
 		target.Release();
 		zs.Release();
-		swap.Release();
+		if (hWaitable) {
+			CloseHandle(hWaitable);
+			hWaitable = NULL;
+		}
+		swap.Clear();
 	}
 
 	gs_swap_chain(gs_device *device, const gs_init_data *data);
+	virtual ~gs_swap_chain();
 };
 
 struct BlendState {
@@ -826,6 +854,7 @@ struct BlendState {
 	gs_blend_type destFactorC;
 	gs_blend_type srcFactorA;
 	gs_blend_type destFactorA;
+	gs_blend_op_type op;
 
 	bool redEnabled;
 	bool greenEnabled;
@@ -838,6 +867,7 @@ struct BlendState {
 		  destFactorC(GS_BLEND_INVSRCALPHA),
 		  srcFactorA(GS_BLEND_ONE),
 		  destFactorA(GS_BLEND_INVSRCALPHA),
+		  op(GS_BLEND_OP_ADD),
 		  redEnabled(true),
 		  greenEnabled(true),
 		  blueEnabled(true),
