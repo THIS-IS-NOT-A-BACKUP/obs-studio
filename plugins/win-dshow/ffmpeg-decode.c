@@ -25,6 +25,9 @@
 
 #ifdef USE_NEW_HARDWARE_CODEC_METHOD
 enum AVHWDeviceType hw_priority[] = {
+	AV_HWDEVICE_TYPE_D3D11VA,
+	AV_HWDEVICE_TYPE_DXVA2,
+	AV_HWDEVICE_TYPE_QSV,
 	AV_HWDEVICE_TYPE_NONE,
 };
 
@@ -109,10 +112,8 @@ void ffmpeg_decode_free(struct ffmpeg_decode *decode)
 	if (decode->hw_frame)
 		av_frame_free(&decode->hw_frame);
 
-	if (decode->decoder) {
-		avcodec_close(decode->decoder);
-		av_free(decode->decoder);
-	}
+	if (decode->decoder)
+		avcodec_free_context(&decode->decoder);
 
 	if (decode->frame)
 		av_frame_free(&decode->frame);
