@@ -3531,6 +3531,8 @@ void OBSBasic::ActivateAudioSource(OBSSource source)
 {
 	if (SourceMixerHidden(source))
 		return;
+	if (!obs_source_active(source))
+		return;
 	if (!obs_source_audio_active(source))
 		return;
 
@@ -9680,6 +9682,9 @@ void OBSBasic::PauseRecording()
 
 		os_atomic_set_bool(&recording_paused, true);
 
+		if (replay)
+			replay->setEnabled(false);
+
 		if (api)
 			api->on_event(OBS_FRONTEND_EVENT_RECORDING_PAUSED);
 
@@ -9723,6 +9728,9 @@ void OBSBasic::UnpauseRecording()
 		}
 
 		os_atomic_set_bool(&recording_paused, false);
+
+		if (replay)
+			replay->setEnabled(true);
 
 		if (api)
 			api->on_event(OBS_FRONTEND_EVENT_RECORDING_UNPAUSED);
@@ -9924,11 +9932,25 @@ void OBSBasic::on_customContextMenuRequested(const QPoint &pos)
 {
 	QWidget *widget = childAt(pos);
 	const char *className = nullptr;
-	if (widget != nullptr)
+	QString objName;
+	if (widget != nullptr) {
 		className = widget->metaObject()->className();
+		objName = widget->objectName();
+	}
 
-	if (!className || strstr(className, "Dock") != nullptr)
-		ui->menuDocks->exec(mapToGlobal(pos));
+	QPoint globalPos = mapToGlobal(pos);
+	if (className && strstr(className, "Dock") != nullptr &&
+	    !objName.isEmpty()) {
+		if (objName.compare("scenesDock") == 0) {
+			ui->scenes->customContextMenuRequested(globalPos);
+		} else if (objName.compare("sourcesDock") == 0) {
+			ui->sources->customContextMenuRequested(globalPos);
+		} else if (objName.compare("mixerDock") == 0) {
+			StackedMixerAreaContextMenuRequested();
+		}
+	} else if (!className) {
+		ui->menuDocks->exec(globalPos);
+	}
 }
 
 void OBSBasic::UpdateProjectorHideCursor()
