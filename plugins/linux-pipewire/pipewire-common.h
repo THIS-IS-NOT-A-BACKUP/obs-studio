@@ -1,6 +1,6 @@
-/* pipewire-capture.h
+/* pipewire-common.h
  *
- * Copyright 2020 Georges Basile Stavracas Neto <georges.stavracas@gmail.com>
+ * Copyright 2021 columbarius <co1umbarius@protonmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,5 +20,5 @@
 
 #pragma once
 
-void pipewire_capture_load(void);
-void pipewire_capture_unload(void);
+void obs_pipewire_load(void);
+void obs_pipewire_unload(void);
