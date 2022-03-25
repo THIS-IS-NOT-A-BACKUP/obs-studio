@@ -410,6 +410,12 @@ EXPORT bool obs_reset_audio(const struct obs_audio_info *oai);
 /** Gets the current video settings, returns false if no video */
 EXPORT bool obs_get_video_info(struct obs_video_info *ovi);
 
+/** Gets the SDR white level, returns 300.0 if no video */
+EXPORT float obs_get_video_sdr_white_level(void);
+
+/** Sets the SDR white level */
+EXPORT void obs_set_video_sdr_white_level(float sdr_white_level);
+
 /** Gets the current audio settings, returns false if no audio */
 EXPORT bool obs_get_audio_info(struct obs_audio_info *oai);
 
@@ -880,6 +886,9 @@ EXPORT void obs_display_destroy(obs_display_t *display);
 /** Changes the size of this display */
 EXPORT void obs_display_resize(obs_display_t *display, uint32_t cx,
 			       uint32_t cy);
+
+/** Updates the color space of this display */
+EXPORT void obs_display_update_color_space(obs_display_t *display);
 
 /**
  * Adds a draw callback for this display context
@@ -1850,16 +1859,30 @@ EXPORT void obs_sceneitem_set_show_transition(obs_sceneitem_t *item,
 					      obs_source_t *transition);
 EXPORT void obs_sceneitem_set_show_transition_duration(obs_sceneitem_t *item,
 						       uint32_t duration_ms);
-EXPORT obs_source_t *obs_sceneitem_get_show_transition(obs_sceneitem_t *item);
-EXPORT uint32_t
+OBS_DEPRECATED EXPORT obs_source_t *
+obs_sceneitem_get_show_transition(obs_sceneitem_t *item);
+OBS_DEPRECATED EXPORT uint32_t
 obs_sceneitem_get_show_transition_duration(obs_sceneitem_t *item);
-EXPORT void obs_sceneitem_set_hide_transition(obs_sceneitem_t *item,
-					      obs_source_t *transition);
-EXPORT void obs_sceneitem_set_hide_transition_duration(obs_sceneitem_t *item,
-						       uint32_t duration_ms);
-EXPORT obs_source_t *obs_sceneitem_get_hide_transition(obs_sceneitem_t *item);
-EXPORT uint32_t
+OBS_DEPRECATED EXPORT void
+obs_sceneitem_set_hide_transition(obs_sceneitem_t *item,
+				  obs_source_t *transition);
+OBS_DEPRECATED EXPORT void
+obs_sceneitem_set_hide_transition_duration(obs_sceneitem_t *item,
+					   uint32_t duration_ms);
+OBS_DEPRECATED EXPORT obs_source_t *
+obs_sceneitem_get_hide_transition(obs_sceneitem_t *item);
+OBS_DEPRECATED EXPORT uint32_t
 obs_sceneitem_get_hide_transition_duration(obs_sceneitem_t *item);
+
+EXPORT void obs_sceneitem_set_transition(obs_sceneitem_t *item, bool show,
+					 obs_source_t *transition);
+EXPORT obs_source_t *obs_sceneitem_get_transition(obs_sceneitem_t *item,
+						  bool show);
+EXPORT void obs_sceneitem_set_transition_duration(obs_sceneitem_t *item,
+						  bool show,
+						  uint32_t duration_ms);
+EXPORT uint32_t obs_sceneitem_get_transition_duration(obs_sceneitem_t *item,
+						      bool show);
 EXPORT void obs_sceneitem_do_transition(obs_sceneitem_t *item, bool visible);
 EXPORT void obs_sceneitem_transition_load(struct obs_scene_item *item,
 					  obs_data_t *data, bool show);
