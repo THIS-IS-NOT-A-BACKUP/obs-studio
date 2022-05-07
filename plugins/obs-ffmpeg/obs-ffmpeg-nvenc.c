@@ -163,6 +163,8 @@ static bool nvenc_update(struct nvenc_encoder *enc, obs_data_t *settings,
 
 	set_psycho_aq(enc, psycho_aq);
 
+	enc->ffve.context->max_b_frames = bf;
+
 	const char *ffmpeg_opts = obs_data_get_string(settings, "ffmpeg_opts");
 	ffmpeg_video_encoder_update(&enc->ffve, bitrate, keyint_sec, voi, &info,
 				    ffmpeg_opts);
@@ -371,7 +373,7 @@ void hevc_nvenc_defaults(obs_data_t *settings)
 	obs_data_set_default_string(settings, "profile", "main");
 	obs_data_set_default_bool(settings, "psycho_aq", true);
 	obs_data_set_default_int(settings, "gpu", 0);
-	obs_data_set_default_int(settings, "bf", 2);
+	obs_data_set_default_int(settings, "bf", 0);
 	obs_data_set_default_bool(settings, "repeat_headers", false);
 }
 #endif
