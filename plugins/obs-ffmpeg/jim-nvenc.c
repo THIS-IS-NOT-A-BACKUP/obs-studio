@@ -187,6 +187,7 @@ static bool nv_texture_init(struct nvenc_data *enc, struct nv_texture *nvtex)
 
 	nvtex->res = res.registeredResource;
 	nvtex->tex = tex;
+	nvtex->mapped_res = NULL;
 	return true;
 }
 
@@ -938,7 +939,7 @@ static bool init_bitstreams(struct nvenc_data *enc)
 
 static bool init_textures(struct nvenc_data *enc)
 {
-	da_reserve(enc->bitstreams, enc->buf_count);
+	da_reserve(enc->textures, enc->buf_count);
 	for (int i = 0; i < enc->buf_count; i++) {
 		struct nv_texture texture;
 		if (!nv_texture_init(enc, &texture)) {
