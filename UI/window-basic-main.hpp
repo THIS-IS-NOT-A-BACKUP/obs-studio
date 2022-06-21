@@ -446,9 +446,6 @@ private:
 
 	void CreateProgramDisplay();
 	void CreateProgramOptions();
-	int TransitionCount();
-	int AddTransitionBeforeSeparator(const QString &name,
-					 obs_source_t *source);
 	void AddQuickTransitionId(int id);
 	void AddQuickTransition();
 	void AddQuickTransitionHotkey(QuickTransition *qt);
@@ -704,7 +701,7 @@ private slots:
 
 	void ProcessHotkey(obs_hotkey_id id, bool pressed);
 
-	void AddTransition(QString id);
+	void AddTransition();
 	void RenameTransition();
 	void TransitionClicked();
 	void TransitionStopped();
@@ -1066,7 +1063,8 @@ private slots:
 	void on_toggleSourceIcons_toggled(bool visible);
 
 	void on_transitions_currentIndexChanged(int index);
-	void RemoveTransitionClicked();
+	void on_transitionAdd_clicked();
+	void on_transitionRemove_clicked();
 	void on_transitionProps_clicked();
 	void on_transitionDuration_valueChanged(int value);
 	void on_tbar_position_valueChanged(int value);
@@ -1136,8 +1134,6 @@ private slots:
 	void OpenSceneWindow();
 
 	void StackedMixerAreaContextMenuRequested();
-
-	void ResizeOutputSizeOfSource();
 
 public slots:
 	void on_actionResetTransform_triggered();
