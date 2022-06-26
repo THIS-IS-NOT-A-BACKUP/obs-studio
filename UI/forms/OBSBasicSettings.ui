@@ -1525,19 +1525,6 @@
                      </widget>
                     </item>
                     <item row="1" column="0">
-                     <widget class="QLabel" name="simpleOutStrEncoderLabel">
-                      <property name="text">
-                       <string>Basic.Settings.Output.Encoder</string>
-                      </property>
-                      <property name="buddy">
-                       <cstring>simpleOutRecEncoder</cstring>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="1">
-                     <widget class="QComboBox" name="simpleOutStrEncoder"/>
-                    </item>
-                    <item row="2" column="0">
                      <widget class="QLabel" name="label_20">
                       <property name="text">
                        <string>Basic.Settings.Output.AudioBitrate</string>
@@ -1547,7 +1534,7 @@
                       </property>
                      </widget>
                     </item>
-                    <item row="2" column="1">
+                    <item row="1" column="1">
                      <widget class="QComboBox" name="simpleOutputABitrate">
                       <property name="currentIndex">
                        <number>8</number>
@@ -1609,17 +1596,20 @@
                       </item>
                      </widget>
                     </item>
-                    <item row="3" column="1">
-                     <widget class="QCheckBox" name="simpleOutAdvanced">
+                    <item row="2" column="0">
+                     <widget class="QLabel" name="simpleOutStrEncoderLabel">
                       <property name="text">
-                       <string>Basic.Settings.Output.Advanced</string>
+                       <string>Basic.Settings.Output.Encoder</string>
                       </property>
-                      <property name="checked">
-                       <bool>true</bool>
+                      <property name="buddy">
+                       <cstring>simpleOutRecEncoder</cstring>
                       </property>
                      </widget>
                     </item>
-                    <item row="4" column="0">
+                    <item row="2" column="1">
+                     <widget class="QComboBox" name="simpleOutStrEncoder"/>
+                    </item>
+                    <item row="3" column="0">
                      <widget class="QLabel" name="label_24">
                       <property name="enabled">
                        <bool>true</bool>
@@ -1632,8 +1622,18 @@
                       </property>
                      </widget>
                     </item>
-                    <item row="4" column="1">
+                    <item row="3" column="1">
                      <widget class="QComboBox" name="simpleOutPreset"/>
+                    </item>
+                    <item row="4" column="1">
+                     <widget class="QCheckBox" name="simpleOutAdvanced">
+                      <property name="text">
+                       <string>Basic.Settings.Output.Advanced</string>
+                      </property>
+                      <property name="checked">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
                     </item>
                     <item row="5" column="0">
                      <widget class="QLabel" name="label_23">
@@ -5590,8 +5590,15 @@
                    <property name="topMargin">
                     <number>2</number>
                    </property>
-                   <item row="0" column="0">
-                    <widget class="QLabel" name="label_27">
+                   <item row="0" column="1">
+                    <widget class="QLabel" name="advNetworkDisabled">
+                     <property name="text">
+                      <string>Basic.Settings.Advanced.Network.Disabled</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="bindToIPLabel">
                      <property name="text">
                       <string>Basic.Settings.Advanced.Network.BindToIP</string>
                      </property>
@@ -5600,17 +5607,17 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="0" column="1">
+                   <item row="1" column="1">
                     <widget class="QComboBox" name="bindToIP"/>
                    </item>
-                   <item row="2" column="1">
+                   <item row="3" column="1">
                     <widget class="QCheckBox" name="enableNewSocketLoop">
                      <property name="text">
                       <string>Basic.Settings.Advanced.Network.EnableNewSocketLoop</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="3" column="1">
+                   <item row="4" column="1">
                     <widget class="QCheckBox" name="enableLowLatencyMode">
                      <property name="enabled">
                       <bool>false</bool>
@@ -5620,7 +5627,7 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="2" column="0">
+                   <item row="3" column="0">
                     <spacer name="horizontalSpacer_7">
                      <property name="orientation">
                       <enum>Qt::Horizontal</enum>
@@ -5633,7 +5640,7 @@
                      </property>
                     </spacer>
                    </item>
-                   <item row="1" column="1">
+                   <item row="2" column="1">
                     <widget class="QCheckBox" name="dynBitrate">
                      <property name="toolTip">
                       <string>Basic.Settings.Output.DynamicBitrate.TT</string>
@@ -5848,10 +5855,10 @@
   <tabstop>scrollArea_3</tabstop>
   <tabstop>outputMode</tabstop>
   <tabstop>simpleOutputVBitrate</tabstop>
-  <tabstop>simpleOutStrEncoder</tabstop>
   <tabstop>simpleOutputABitrate</tabstop>
-  <tabstop>simpleOutAdvanced</tabstop>
+  <tabstop>simpleOutStrEncoder</tabstop>
   <tabstop>simpleOutPreset</tabstop>
+  <tabstop>simpleOutAdvanced</tabstop>
   <tabstop>simpleOutCustom</tabstop>
   <tabstop>simpleOutputPath</tabstop>
   <tabstop>simpleOutputBrowse</tabstop>
@@ -6034,38 +6041,6 @@
     </hint>
     <hint type="destinationlabel">
      <x>401</x>
-     <y>64</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>simpleOutAdvanced</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>simpleOutPreset</receiver>
-   <slot>setVisible(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>251</x>
-     <y>64</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>251</x>
-     <y>64</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>simpleOutAdvanced</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>label_24</receiver>
-   <slot>setVisible(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>251</x>
-     <y>64</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>251</x>
      <y>64</y>
     </hint>
    </hints>
