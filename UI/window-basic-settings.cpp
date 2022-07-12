@@ -707,6 +707,7 @@ OBSBasicSettings::OBSBasicSettings(QWidget *parent)
 	LoadEncoderTypes();
 	LoadColorRanges();
 	LoadColorSpaces();
+	LoadColorFormats();
 	LoadFormats();
 
 	auto ReloadAudioSources = [](void *data, calldata_t *param) {
@@ -1058,6 +1059,23 @@ void OBSBasicSettings::LoadColorSpaces()
 	ui->colorSpace->addItem(CS_601_STR, "601");
 	ui->colorSpace->addItem(CS_2100PQ_STR, "2100PQ");
 	ui->colorSpace->addItem(CS_2100HLG_STR, "2100HLG");
+}
+
+#define CF_NV12_STR QTStr("Basic.Settings.Advanced.Video.ColorFormat.NV12")
+#define CF_I420_STR QTStr("Basic.Settings.Advanced.Video.ColorFormat.I420")
+#define CF_I444_STR QTStr("Basic.Settings.Advanced.Video.ColorFormat.I444")
+#define CF_P010_STR QTStr("Basic.Settings.Advanced.Video.ColorFormat.P010")
+#define CF_I010_STR QTStr("Basic.Settings.Advanced.Video.ColorFormat.I010")
+#define CF_RGB_STR QTStr("Basic.Settings.Advanced.Video.ColorFormat.RGB")
+
+void OBSBasicSettings::LoadColorFormats()
+{
+	ui->colorFormat->addItem(CF_NV12_STR, "NV12");
+	ui->colorFormat->addItem(CF_I420_STR, "I420");
+	ui->colorFormat->addItem(CF_I444_STR, "I444");
+	ui->colorFormat->addItem(CF_P010_STR, "P010");
+	ui->colorFormat->addItem(CF_I010_STR, "I010");
+	ui->colorFormat->addItem(CF_RGB_STR, "RGB");
 }
 
 #define AV_FORMAT_DEFAULT_STR \
@@ -2674,7 +2692,7 @@ void OBSBasicSettings::LoadAdvancedSettings()
 
 	UpdateColorFormatSpaceWarning();
 
-	SetComboByName(ui->colorFormat, videoColorFormat);
+	SetComboByValue(ui->colorFormat, videoColorFormat);
 	SetComboByValue(ui->colorSpace, videoColorSpace);
 	SetComboByValue(ui->colorRange, videoColorRange);
 	ui->sdrWhiteLevel->setValue(sdrWhiteLevel);
@@ -3363,7 +3381,7 @@ void OBSBasicSettings::SaveAdvancedSettings()
 				ui->resetOSXVSync->isChecked());
 #endif
 
-	SaveCombo(ui->colorFormat, "Video", "ColorFormat");
+	SaveComboData(ui->colorFormat, "Video", "ColorFormat");
 	SaveComboData(ui->colorSpace, "Video", "ColorSpace");
 	SaveComboData(ui->colorRange, "Video", "ColorRange");
 	SaveSpinBox(ui->sdrWhiteLevel, "Video", "SdrWhiteLevel");
@@ -3542,6 +3560,11 @@ void OBSBasicSettings::SaveOutputSettings()
 #endif
 	else if (encoder == SIMPLE_ENCODER_AMD)
 		presetType = "AMDPreset";
+	else if (encoder == SIMPLE_ENCODER_APPLE_H264)
+		/* The Apple encoders don't have presets like the other encoders
+         do. This only exists to make sure that the x264 preset doesn't
+         get overwritten with empty data. */
+		presetType = "ApplePreset";
 	else
 		presetType = "Preset";
 
@@ -4768,6 +4791,14 @@ void OBSBasicSettings::FillSimpleRecordingValues()
 		ui->simpleOutRecEncoder->addItem(
 			ENCODER_STR("Hardware.AMD.H264"),
 			QString(SIMPLE_ENCODER_AMD));
+	if (EncoderAvailable("com.apple.videotoolbox.videoencoder.ave.avc")
+#ifndef __aarch64__
+	    && os_get_emulation_status() == true
+#endif
+	)
+		ui->simpleOutRecEncoder->addItem(
+			ENCODER_STR("Hardware.Apple.H264"),
+			QString(SIMPLE_ENCODER_APPLE_H264));
 #undef ADD_QUALITY
 }
 
@@ -4793,6 +4824,18 @@ void OBSBasicSettings::FillSimpleStreamingValues()
 		ui->simpleOutStrEncoder->addItem(
 			ENCODER_STR("Hardware.AMD.H264"),
 			QString(SIMPLE_ENCODER_AMD));
+/* Preprocessor guard required for the macOS version check */
+#ifdef __APPLE__
+	if (EncoderAvailable("com.apple.videotoolbox.videoencoder.ave.avc")
+#ifndef __aarch64__
+	    && os_get_emulation_status() == true
+#endif
+	)
+		if (__builtin_available(macOS 13.0, *))
+			ui->simpleOutStrEncoder->addItem(
+				ENCODER_STR("Hardware.Apple.H264"),
+				QString(SIMPLE_ENCODER_APPLE_H264));
+#endif
 #undef ENCODER_STR
 }
 
@@ -4835,6 +4878,9 @@ void OBSBasicSettings::SimpleStreamingEncoderChanged()
 	QString preset;
 	const char *defaultPreset = nullptr;
 
+	ui->simpleOutAdvanced->setVisible(true);
+	ui->simpleOutPresetLabel->setVisible(true);
+	ui->simpleOutPreset->setVisible(true);
 	ui->simpleOutPreset->clear();
 
 	if (encoder == SIMPLE_ENCODER_QSV) {
@@ -4906,6 +4952,11 @@ void OBSBasicSettings::SimpleStreamingEncoderChanged()
 
 		defaultPreset = "balanced";
 		preset = curAMDPreset;
+	} else if (encoder == SIMPLE_ENCODER_APPLE_H264) {
+		ui->simpleOutAdvanced->setChecked(false);
+		ui->simpleOutAdvanced->setVisible(false);
+		ui->simpleOutPreset->setVisible(false);
+		ui->simpleOutPresetLabel->setVisible(false);
 	} else {
 
 #define PRESET_STR(val) \
