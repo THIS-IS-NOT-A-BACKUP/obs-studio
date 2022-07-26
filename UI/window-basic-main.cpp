@@ -455,17 +455,6 @@ OBSBasic::OBSBasic(QWidget *parent)
 	QPoint newPos = curPos + statsDockPos;
 	statsDock->move(newPos);
 
-	ui->previewLabel->setProperty("themeID", "previewProgramLabels");
-	ui->previewLabel->style()->polish(ui->previewLabel);
-
-	bool labels = config_get_bool(GetGlobalConfig(), "BasicWindow",
-				      "StudioModeLabels");
-
-	if (!previewProgramMode)
-		ui->previewLabel->setHidden(true);
-	else
-		ui->previewLabel->setHidden(!labels);
-
 	ui->previewDisabledWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(ui->previewDisabledWidget,
 		SIGNAL(customContextMenuRequested(const QPoint &)), this,
@@ -2036,9 +2025,11 @@ void OBSBasic::OBSInit()
 	delete ui->actionShowCrashLogs;
 	delete ui->actionUploadLastCrashLog;
 	delete ui->menuCrashLogs;
+	delete ui->actionRepair;
 	ui->actionShowCrashLogs = nullptr;
 	ui->actionUploadLastCrashLog = nullptr;
 	ui->menuCrashLogs = nullptr;
+	ui->actionRepair = nullptr;
 #if !defined(__APPLE__)
 	delete ui->actionCheckForUpdates;
 	ui->actionCheckForUpdates = nullptr;
@@ -2052,8 +2043,12 @@ void OBSBasic::OBSInit()
 #endif
 
 #if defined(_WIN32) || defined(__APPLE__)
-	if (App()->IsUpdaterDisabled())
+	if (App()->IsUpdaterDisabled()) {
 		ui->actionCheckForUpdates->setEnabled(false);
+#if defined(_WIN32)
+		ui->actionRepair->setEnabled(false);
+#endif
+	}
 #endif
 
 	OnFirstLoad();
@@ -2071,7 +2066,7 @@ void OBSBasic::OnFirstLoad()
 	if (cef) {
 		WhatsNewInfoThread *wnit = new WhatsNewInfoThread();
 		connect(wnit, &WhatsNewInfoThread::Result, this,
-			&OBSBasic::ReceivedIntroJson);
+			&OBSBasic::ReceivedIntroJson, Qt::QueuedConnection);
 
 		introCheckThread.reset(wnit);
 		introCheckThread->start();
@@ -2086,6 +2081,17 @@ void OBSBasic::OnFirstLoad()
 	if (showLogViewerOnStartup)
 		on_actionViewCurrentLog_triggered();
 }
+
+#if defined(OBS_RELEASE_CANDIDATE) && OBS_RELEASE_CANDIDATE > 0
+#define CUR_VER OBS_RELEASE_CANDIDATE_VER
+#define LAST_INFO_VERSION_STRING "InfoLastRCVersion"
+#elif OBS_BETA > 0
+#define CUR_VER OBS_BETA_VER
+#define LAST_INFO_VERSION_STRING "InfoLastBetaVersion"
+#else
+#define CUR_VER LIBOBS_API_VER
+#define LAST_INFO_VERSION_STRING "InfoLastVersion"
+#endif
 
 /* shows a "what's new" page on startup of new versions using CEF */
 void OBSBasic::ReceivedIntroJson(const QString &text)
@@ -2137,28 +2143,15 @@ void OBSBasic::ReceivedIntroJson(const QString &text)
 		return;
 	}
 
-#if defined(OBS_RELEASE_CANDIDATE) && OBS_RELEASE_CANDIDATE > 0
 	uint32_t lastVersion = config_get_int(App()->GlobalConfig(), "General",
-					      "LastRCVersion");
-#elif OBS_BETA > 0
-	uint32_t lastVersion = config_get_int(App()->GlobalConfig(), "General",
-					      "LastBetaVersion");
-#else
-	uint32_t lastVersion =
-		config_get_int(App()->GlobalConfig(), "General", "LastVersion");
-#endif
-
+					      LAST_INFO_VERSION_STRING);
 	int current_version_increment = -1;
 
-#if defined(OBS_RELEASE_CANDIDATE) && OBS_RELEASE_CANDIDATE > 0
-	if (lastVersion < OBS_RELEASE_CANDIDATE_VER) {
-#elif OBS_BETA > 0
-	if (lastVersion < OBS_BETA_VER) {
-#else
-	if ((lastVersion & ~0xFFFF) < (LIBOBS_API_VER & ~0xFFFF)) {
-#endif
+	if ((lastVersion & ~0xFFFF) < (CUR_VER & ~0xFFFF)) {
 		config_set_int(App()->GlobalConfig(), "General",
 			       "InfoIncrement", -1);
+		config_set_int(App()->GlobalConfig(), "General",
+			       LAST_INFO_VERSION_STRING, CUR_VER);
 	} else {
 		current_version_increment = config_get_int(
 			App()->GlobalConfig(), "General", "InfoIncrement");
@@ -2170,6 +2163,7 @@ void OBSBasic::ReceivedIntroJson(const QString &text)
 
 	config_set_int(App()->GlobalConfig(), "General", "InfoIncrement",
 		       info_increment);
+	config_save_safe(App()->GlobalConfig(), "tmp", nullptr);
 
 	/* Don't show What's New dialog for new users */
 #if !defined(OBS_RELEASE_CANDIDATE) || OBS_RELEASE_CANDIDATE == 0 || \
@@ -2185,7 +2179,7 @@ void OBSBasic::ReceivedIntroJson(const QString &text)
 		new WhatsNewBrowserInitThread(QT_UTF8(info_url.c_str()));
 
 	connect(wnbit, &WhatsNewBrowserInitThread::Result, this,
-		&OBSBasic::ShowWhatsNew);
+		&OBSBasic::ShowWhatsNew, Qt::QueuedConnection);
 
 	whatsNewInitThread.reset(wnbit);
 	whatsNewInitThread->start();
@@ -2197,6 +2191,9 @@ void OBSBasic::ReceivedIntroJson(const QString &text)
 	UNUSED_PARAMETER(text);
 #endif
 }
+
+#undef CUR_VER
+#undef LAST_INFO_VERSION_STRING
 
 void OBSBasic::ShowWhatsNew(const QString &url)
 {
@@ -2998,6 +2995,7 @@ void OBSBasic::RenameSources(OBSSource source, QString newName,
 		OBSProjector::UpdateMultiviewProjectors();
 
 	UpdateContextBar();
+	UpdatePreviewProgramIndicators();
 }
 
 void OBSBasic::ClearContextBar()
@@ -3676,6 +3674,7 @@ void OBSBasic::CheckForUpdates(bool manualUpdate)
 	trigger_sparkle_update();
 #elif _WIN32
 	ui->actionCheckForUpdates->setEnabled(false);
+	ui->actionRepair->setEnabled(false);
 
 	if (updateCheckThread && updateCheckThread->isRunning())
 		return;
@@ -3690,6 +3689,7 @@ void OBSBasic::CheckForUpdates(bool manualUpdate)
 void OBSBasic::updateCheckFinished()
 {
 	ui->actionCheckForUpdates->setEnabled(true);
+	ui->actionRepair->setEnabled(true);
 }
 
 void OBSBasic::DuplicateSelectedScene()
@@ -4317,11 +4317,7 @@ void OBSBasic::ResetUI()
 	else
 		ui->previewLayout->setDirection(QBoxLayout::LeftToRight);
 
-	if (previewProgramMode)
-		ui->previewLabel->setHidden(!labels);
-
-	if (programLabel)
-		programLabel->setHidden(!labels);
+	UpdatePreviewProgramIndicators();
 }
 
 int OBSBasic::ResetVideo()
@@ -6124,6 +6120,20 @@ void OBSBasic::on_actionUploadLastCrashLog_triggered()
 void OBSBasic::on_actionCheckForUpdates_triggered()
 {
 	CheckForUpdates(true);
+}
+
+void OBSBasic::on_actionRepair_triggered()
+{
+#if defined(_WIN32)
+	ui->actionCheckForUpdates->setEnabled(false);
+	ui->actionRepair->setEnabled(false);
+
+	if (updateCheckThread && updateCheckThread->isRunning())
+		return;
+
+	updateCheckThread.reset(new AutoUpdateThread(false, true));
+	updateCheckThread->start();
+#endif
 }
 
 void OBSBasic::logUploadFinished(const QString &text, const QString &error)
@@ -8270,62 +8280,97 @@ void OBSBasic::on_actionStretchToScreen_triggered()
 			  undo_redo, undo_redo, undo_data, redo_data);
 }
 
-enum class CenterType {
-	Scene,
-	Vertical,
-	Horizontal,
-};
-
-static bool center_to_scene(obs_scene_t *, obs_sceneitem_t *item, void *param)
+void OBSBasic::CenterSelectedSceneItems(const CenterType &centerType)
 {
-	CenterType centerType = *reinterpret_cast<CenterType *>(param);
+	QModelIndexList selectedItems = GetAllSelectedSourceItems();
 
-	vec3 tl, br, itemCenter, screenCenter, offset;
+	if (!selectedItems.count())
+		return;
+
+	vector<OBSSceneItem> items;
+
+	// Filter out items that have no size
+	for (int x = 0; x < selectedItems.count(); x++) {
+		OBSSceneItem item = ui->sources->Get(selectedItems[x].row());
+		obs_transform_info oti;
+		obs_sceneitem_get_info(item, &oti);
+
+		obs_source_t *source = obs_sceneitem_get_source(item);
+		float width = float(obs_source_get_width(source)) * oti.scale.x;
+		float height =
+			float(obs_source_get_height(source)) * oti.scale.y;
+
+		if (width == 0.0f || height == 0.0f)
+			continue;
+
+		items.emplace_back(item);
+	}
+
+	if (!items.size())
+		return;
+
+	// Get center x, y coordinates of items
+	vec3 center;
+
+	float top = M_INFINITE;
+	float left = M_INFINITE;
+	float right = 0.0f;
+	float bottom = 0.0f;
+
+	for (auto &item : items) {
+		vec3 tl, br;
+
+		GetItemBox(item, tl, br);
+
+		left = (std::min)(tl.x, left);
+		top = (std::min)(tl.y, top);
+		right = (std::max)(br.x, right);
+		bottom = (std::max)(br.y, bottom);
+	}
+
+	center.x = (right + left) / 2.0f;
+	center.y = (top + bottom) / 2.0f;
+	center.z = 0.0f;
+
+	// Get coordinates of screen center
 	obs_video_info ovi;
-	obs_transform_info oti;
-
-	if (obs_sceneitem_is_group(item))
-		obs_sceneitem_group_enum_items(item, center_to_scene,
-					       &centerType);
-	if (!obs_sceneitem_selected(item))
-		return true;
-	if (obs_sceneitem_locked(item))
-		return true;
-
 	obs_get_video_info(&ovi);
-	obs_sceneitem_get_info(item, &oti);
 
+	vec3 screenCenter;
 	vec3_set(&screenCenter, float(ovi.base_width), float(ovi.base_height),
 		 0.0f);
 
 	vec3_mulf(&screenCenter, &screenCenter, 0.5f);
 
-	GetItemBox(item, tl, br);
+	// Calculate difference between screen center and item center
+	vec3 offset;
+	vec3_sub(&offset, &screenCenter, &center);
 
-	vec3_sub(&itemCenter, &br, &tl);
-	vec3_mulf(&itemCenter, &itemCenter, 0.5f);
-	vec3_add(&itemCenter, &itemCenter, &tl);
+	// Shift items by offset
+	for (auto &item : items) {
+		vec3 tl, br;
 
-	vec3_sub(&offset, &screenCenter, &itemCenter);
-	vec3_add(&tl, &tl, &offset);
+		GetItemBox(item, tl, br);
 
-	vec3 itemTL = GetItemTL(item);
+		vec3_add(&tl, &tl, &offset);
 
-	if (centerType == CenterType::Vertical)
-		tl.x = itemTL.x;
-	else if (centerType == CenterType::Horizontal)
-		tl.y = itemTL.y;
+		vec3 itemTL = GetItemTL(item);
 
-	SetItemTL(item, tl);
-	return true;
-};
+		if (centerType == CenterType::Vertical)
+			tl.x = itemTL.x;
+		else if (centerType == CenterType::Horizontal)
+			tl.y = itemTL.y;
+
+		SetItemTL(item, tl);
+	}
+}
 
 void OBSBasic::on_actionCenterToScreen_triggered()
 {
 	CenterType centerType = CenterType::Scene;
 	OBSDataAutoRelease wrapper =
 		obs_scene_save_transform_states(GetCurrentScene(), false);
-	obs_scene_enum_items(GetCurrentScene(), center_to_scene, &centerType);
+	CenterSelectedSceneItems(centerType);
 	OBSDataAutoRelease rwrapper =
 		obs_scene_save_transform_states(GetCurrentScene(), false);
 
@@ -8342,7 +8387,7 @@ void OBSBasic::on_actionVerticalCenter_triggered()
 	CenterType centerType = CenterType::Vertical;
 	OBSDataAutoRelease wrapper =
 		obs_scene_save_transform_states(GetCurrentScene(), false);
-	obs_scene_enum_items(GetCurrentScene(), center_to_scene, &centerType);
+	CenterSelectedSceneItems(centerType);
 	OBSDataAutoRelease rwrapper =
 		obs_scene_save_transform_states(GetCurrentScene(), false);
 
@@ -8359,7 +8404,7 @@ void OBSBasic::on_actionHorizontalCenter_triggered()
 	CenterType centerType = CenterType::Horizontal;
 	OBSDataAutoRelease wrapper =
 		obs_scene_save_transform_states(GetCurrentScene(), false);
-	obs_scene_enum_items(GetCurrentScene(), center_to_scene, &centerType);
+	CenterSelectedSceneItems(centerType);
 	OBSDataAutoRelease rwrapper =
 		obs_scene_save_transform_states(GetCurrentScene(), false);
 

@@ -205,6 +205,12 @@ class OBSBasic : public OBSMainWindow {
 		ContextBarSize_Normal
 	};
 
+	enum class CenterType {
+		Scene,
+		Vertical,
+		Horizontal,
+	};
+
 private:
 	obs_frontend_callbacks *api = nullptr;
 
@@ -534,6 +540,8 @@ private:
 	void ReceivedIntroJson(const QString &text);
 	void ShowWhatsNew(const QString &url);
 
+	void UpdatePreviewProgramIndicators();
+
 #ifdef BROWSER_AVAILABLE
 	QList<QSharedPointer<QDockWidget>> extraBrowserDocks;
 	QList<QSharedPointer<QAction>> extraBrowserDockActions;
@@ -611,6 +619,8 @@ private:
 
 	void UpdatePreviewSafeAreas();
 	bool drawSafeAreas = false;
+
+	void CenterSelectedSceneItems(const CenterType &centerType);
 
 public slots:
 	void DeferSaveBegin();
@@ -975,6 +985,7 @@ private slots:
 	void on_actionUploadLastLog_triggered();
 	void on_actionViewCurrentLog_triggered();
 	void on_actionCheckForUpdates_triggered();
+	void on_actionRepair_triggered();
 
 	void on_actionShowCrashLogs_triggered();
 	void on_actionUploadLastCrashLog_triggered();
