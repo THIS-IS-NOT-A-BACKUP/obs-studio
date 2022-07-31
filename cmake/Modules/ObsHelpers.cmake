@@ -102,8 +102,6 @@ endfunction()
 
 # Helper function to set up OBS scripting plugin targets
 function(setup_script_plugin_target target)
-  set_target_properties(${target} PROPERTIES PREFIX "")
-
   install(
     TARGETS ${target}
     LIBRARY DESTINATION ${OBS_SCRIPT_PLUGIN_DESTINATION}
@@ -359,13 +357,13 @@ macro(find_qt)
     QUIET)
 
   if(NOT _QT_VERSION AND QT_VERSION STREQUAL AUTO)
-    if(TARGET Qt5::Core)
-      set(_QT_VERSION
-          5
-          CACHE INTERNAL "")
-    elseif(TARGET Qt6::Core)
+    if(TARGET Qt6::Core)
       set(_QT_VERSION
           6
+          CACHE INTERNAL "")
+    elseif(TARGET Qt5::Core)
+      set(_QT_VERSION
+          5
           CACHE INTERNAL "")
     endif()
     obs_status(STATUS "Qt version: ${_QT_VERSION}")

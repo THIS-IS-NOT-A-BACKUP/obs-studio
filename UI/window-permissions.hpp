@@ -1,5 +1,5 @@
 /******************************************************************************
-    Copyright (C) 2020 by Hugh Bailey <obs.jim@gmail.com>
+    Copyright (C) 2014 by Hugh Bailey <obs.jim@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,34 +15,30 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
-#include <QObject>
-#include <string>
-#include <thread>
-#include <obs.hpp>
+#pragma once
 
-class ScreenshotObj : public QObject {
+#include "ui_OBSPermissions.h"
+#include "platform.hpp"
+
+#define MACOS_PERMISSIONS_DIALOG_VERSION 1
+
+class OBSPermissions : public QDialog {
 	Q_OBJECT
 
+private:
+	std::unique_ptr<Ui::OBSPermissions> ui;
+	void SetStatus(QPushButton *btn, MacPermissionStatus status,
+		       const QString &preference);
+
 public:
-	ScreenshotObj(obs_source_t *source);
-	~ScreenshotObj() override;
-	void Screenshot();
-	void Download();
-	void Copy();
-	void MuxAndFinish();
+	OBSPermissions(QWidget *parent, MacPermissionStatus capture,
+		       MacPermissionStatus video, MacPermissionStatus audio,
+		       MacPermissionStatus accessibility);
 
-	gs_texrender_t *texrender = nullptr;
-	gs_stagesurf_t *stagesurf = nullptr;
-	OBSWeakSource weakSource;
-	std::string path;
-	QImage image;
-	std::vector<uint8_t> half_bytes;
-	uint32_t cx;
-	uint32_t cy;
-	std::thread th;
-
-	int stage = 0;
-
-public slots:
-	void Save();
+private slots:
+	void on_capturePermissionButton_clicked();
+	void on_videoPermissionButton_clicked();
+	void on_audioPermissionButton_clicked();
+	void on_accessibilityPermissionButton_clicked();
+	void on_continueButton_clicked();
 };

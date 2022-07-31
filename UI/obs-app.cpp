@@ -43,6 +43,9 @@
 #include "log-viewer.hpp"
 #include "slider-ignorewheel.hpp"
 #include "window-basic-main.hpp"
+#ifdef __APPLE__
+#include "window-permissions.hpp"
+#endif
 #include "window-basic-settings.hpp"
 #include "crash-report.hpp"
 #include "platform.hpp"
@@ -451,6 +454,8 @@ bool OBSApp::InitGlobalConfigDefaults()
 				false);
 	config_set_default_double(globalConfig, "BasicWindow", "SnapDistance",
 				  10.0);
+	config_set_default_bool(globalConfig, "BasicWindow",
+				"SpacingHelpersEnabled", true);
 	config_set_default_bool(globalConfig, "BasicWindow",
 				"RecordWhenStreaming", false);
 	config_set_default_bool(globalConfig, "BasicWindow",
@@ -2189,6 +2194,11 @@ static int run_program(fstream &logFile, int argc, char *argv[])
 	OBSApp program(argc, argv, profilerNameStore.get());
 	try {
 		QAccessible::installFactory(accessibleFactory);
+		QFontDatabase::addApplicationFont(
+			":/fonts/OpenSans-Regular.ttf");
+		QFontDatabase::addApplicationFont(":/fonts/OpenSans-Bold.ttf");
+		QFontDatabase::addApplicationFont(
+			":/fonts/OpenSans-Italic.ttf");
 
 		bool created_log = false;
 
@@ -2281,6 +2291,17 @@ static int run_program(fstream &logFile, int argc, char *argv[])
 			CheckPermission(kAccessibility);
 		MacPermissionStatus screen_permission =
 			CheckPermission(kScreenCapture);
+
+		int permissionsDialogLastShown =
+			config_get_int(GetGlobalConfig(), "General",
+				       "MacOSPermissionsDialogLastShown");
+		if (permissionsDialogLastShown <
+		    MACOS_PERMISSIONS_DIALOG_VERSION) {
+			OBSPermissions *check = new OBSPermissions(
+				nullptr, screen_permission, video_permission,
+				audio_permission, accessibility_permission);
+			check->exec();
+		}
 
 		bool rosettaTranslated = os_get_emulation_status();
 		blog(LOG_INFO, "Rosetta translation used: %s",
