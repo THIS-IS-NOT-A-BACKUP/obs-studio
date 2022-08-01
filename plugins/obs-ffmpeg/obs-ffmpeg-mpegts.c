@@ -156,8 +156,13 @@ static bool create_video_stream(struct ffmpeg_output *stream,
 	}
 	if (!new_stream(data, &data->video, name))
 		return false;
-	if ((data->config.color_trc == AVCOL_TRC_SMPTE2084) ||
-	    (data->config.color_trc == AVCOL_TRC_ARIB_STD_B67)) {
+	const bool pq = data->config.color_trc == AVCOL_TRC_SMPTE2084;
+	const bool hlg = data->config.color_trc == AVCOL_TRC_ARIB_STD_B67;
+	if (pq || hlg) {
+		const int hdr_nominal_peak_level =
+			pq ? (int)obs_get_video_hdr_nominal_peak_level()
+			   : (hlg ? 1000 : 0);
+
 		AVMasteringDisplayMetadata *const mastering =
 			av_mastering_display_metadata_alloc();
 		mastering->display_primaries[0][0] = av_make_q(17, 25);
@@ -169,8 +174,7 @@ static bool create_video_stream(struct ffmpeg_output *stream,
 		mastering->white_point[0] = av_make_q(3127, 10000);
 		mastering->white_point[1] = av_make_q(329, 1000);
 		mastering->min_luminance = av_make_q(0, 1);
-		mastering->max_luminance = av_make_q(
-			(int)obs_get_video_hdr_nominal_peak_level(), 1);
+		mastering->max_luminance = av_make_q(hdr_nominal_peak_level, 1);
 		mastering->has_primaries = 1;
 		mastering->has_luminance = 1;
 		av_stream_add_side_data(data->video,
@@ -1164,7 +1168,7 @@ static bool write_header(struct ffmpeg_output *stream, struct ffmpeg_data *data)
 	return true;
 }
 
-static bool ffmpeg_mpegts_data(void *data, struct encoder_packet *packet)
+static void ffmpeg_mpegts_data(void *data, struct encoder_packet *packet)
 {
 	struct ffmpeg_output *stream = data;
 	struct ffmpeg_data *ff_data = &stream->ff_data;
@@ -1187,28 +1191,27 @@ static bool ffmpeg_mpegts_data(void *data, struct encoder_packet *packet)
 	}
 
 	if (!stream->active)
-		return 0;
+		return;
 
 	/* encoder failure */
 	if (!packet) {
 		obs_output_signal_stop(stream->output, OBS_OUTPUT_ENCODE_ERROR);
 		ffmpeg_mpegts_deactivate(stream);
-		return 0;
+		return;
 	}
 
 	if (stopping(stream)) {
 		if (packet->sys_dts_usec >= (int64_t)stream->stop_ts) {
 			ffmpeg_mpegts_deactivate(stream);
-			return 0;
+			return;
 		}
 	}
 
 	mpegts_write_packet(stream, packet);
-	return 1;
+	return;
 fail:
 	obs_output_signal_stop(stream->output, code);
 	ffmpeg_mpegts_full_stop(stream);
-	return false;
 }
 
 static obs_properties_t *ffmpeg_mpegts_properties(void *unused)
@@ -1226,7 +1229,11 @@ struct obs_output_info ffmpeg_mpegts_muxer = {
 	.id = "ffmpeg_mpegts_muxer",
 	.flags = OBS_OUTPUT_AV | OBS_OUTPUT_ENCODED | OBS_OUTPUT_MULTI_TRACK |
 		 OBS_OUTPUT_SERVICE,
+#ifdef ENABLE_HEVC
 	.encoded_video_codecs = "h264;hevc;av1",
+#else
+	.encoded_video_codecs = "h264;av1",
+#endif
 	.encoded_audio_codecs = "aac",
 	.get_name = ffmpeg_mpegts_getname,
 	.create = ffmpeg_mpegts_create,
