@@ -179,22 +179,29 @@ QMenuBar::item:selected {
 }
 
 /* Item Lists */
+QListWidget {
+    border-radius: 4px;
+}
+
 QListWidget::item {
     color: palette(text);
 }
 
+QListWidget,
 QMenu,
 SceneTree,
 SourceTree {
     padding: 3px;
 }
 
+QListWidget::item,
 SourceTreeItem,
 QMenu::item,
 SceneTree::item {
     padding: 6px;
 }
 
+QListWidget::item,
 SourceTreeItem,
 QMenu::item,
 SceneTree::item,
@@ -334,7 +341,7 @@ OBSBasicStatusBar {
 
 QGroupBox {
     background: palette(dark);
-    border-radius: 8px;
+    border-radius: 4px;
     padding-top: 32px;
     padding-bottom: 8px;
     font-weight: bold;
