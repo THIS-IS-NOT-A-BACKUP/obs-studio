@@ -461,16 +461,22 @@ static bool init_encoder_base(struct nvenc_data *enc, obs_data_t *settings,
 	NV_ENC_MULTI_PASS nv_multipass = get_nv_multipass(multipass);
 
 	if (obs_data_has_user_value(settings, "preset") &&
-	    !obs_data_has_user_value(settings, "preset2")) {
-		if (astrcmpi(preset, "hq") == 0) {
+	    !obs_data_has_user_value(settings, "preset2") &&
+	    enc->codec == CODEC_H264) {
+		if (astrcmpi(preset, "mq") == 0) {
 			nv_preset = NV_ENC_PRESET_P5_GUID;
 			nv_tuning = NV_ENC_TUNING_INFO_HIGH_QUALITY;
 			nv_multipass = NV_ENC_TWO_PASS_QUARTER_RESOLUTION;
 
-		} else if (astrcmpi(preset, "mq") == 0) {
-			nv_preset = NV_ENC_PRESET_P6_GUID;
+		} else if (astrcmpi(preset, "hq") == 0) {
+			nv_preset = NV_ENC_PRESET_P5_GUID;
 			nv_tuning = NV_ENC_TUNING_INFO_HIGH_QUALITY;
-			nv_multipass = NV_ENC_TWO_PASS_QUARTER_RESOLUTION;
+			nv_multipass = NV_ENC_MULTI_PASS_DISABLED;
+
+		} else if (astrcmpi(preset, "default") == 0) {
+			nv_preset = NV_ENC_PRESET_P3_GUID;
+			nv_tuning = NV_ENC_TUNING_INFO_HIGH_QUALITY;
+			nv_multipass = NV_ENC_MULTI_PASS_DISABLED;
 
 		} else if (astrcmpi(preset, "hp") == 0) {
 			nv_preset = NV_ENC_PRESET_P1_GUID;
@@ -485,7 +491,45 @@ static bool init_encoder_base(struct nvenc_data *enc, obs_data_t *settings,
 		} else if (astrcmpi(preset, "llhq") == 0) {
 			nv_preset = NV_ENC_PRESET_P4_GUID;
 			nv_tuning = NV_ENC_TUNING_INFO_LOW_LATENCY;
+			nv_multipass = NV_ENC_MULTI_PASS_DISABLED;
+
+		} else if (astrcmpi(preset, "llhp") == 0) {
+			nv_preset = NV_ENC_PRESET_P2_GUID;
+			nv_tuning = NV_ENC_TUNING_INFO_LOW_LATENCY;
+			nv_multipass = NV_ENC_MULTI_PASS_DISABLED;
+		}
+	} else if (obs_data_has_user_value(settings, "preset") &&
+		   !obs_data_has_user_value(settings, "preset2") &&
+		   enc->codec == CODEC_HEVC) {
+		if (astrcmpi(preset, "mq") == 0) {
+			nv_preset = NV_ENC_PRESET_P6_GUID;
+			nv_tuning = NV_ENC_TUNING_INFO_HIGH_QUALITY;
 			nv_multipass = NV_ENC_TWO_PASS_QUARTER_RESOLUTION;
+
+		} else if (astrcmpi(preset, "hq") == 0) {
+			nv_preset = NV_ENC_PRESET_P6_GUID;
+			nv_tuning = NV_ENC_TUNING_INFO_HIGH_QUALITY;
+			nv_multipass = NV_ENC_MULTI_PASS_DISABLED;
+
+		} else if (astrcmpi(preset, "default") == 0) {
+			nv_preset = NV_ENC_PRESET_P5_GUID;
+			nv_tuning = NV_ENC_TUNING_INFO_HIGH_QUALITY;
+			nv_multipass = NV_ENC_MULTI_PASS_DISABLED;
+
+		} else if (astrcmpi(preset, "hp") == 0) {
+			nv_preset = NV_ENC_PRESET_P1_GUID;
+			nv_tuning = NV_ENC_TUNING_INFO_HIGH_QUALITY;
+			nv_multipass = NV_ENC_MULTI_PASS_DISABLED;
+
+		} else if (astrcmpi(preset, "ll") == 0) {
+			nv_preset = NV_ENC_PRESET_P3_GUID;
+			nv_tuning = NV_ENC_TUNING_INFO_LOW_LATENCY;
+			nv_multipass = NV_ENC_MULTI_PASS_DISABLED;
+
+		} else if (astrcmpi(preset, "llhq") == 0) {
+			nv_preset = NV_ENC_PRESET_P4_GUID;
+			nv_tuning = NV_ENC_TUNING_INFO_LOW_LATENCY;
+			nv_multipass = NV_ENC_MULTI_PASS_DISABLED;
 
 		} else if (astrcmpi(preset, "llhp") == 0) {
 			nv_preset = NV_ENC_PRESET_P2_GUID;
@@ -544,7 +588,8 @@ static bool init_encoder_base(struct nvenc_data *enc, obs_data_t *settings,
 	config->gopLength = gop_size;
 	config->frameIntervalP = 1 + bf;
 
-	enc->bframes = bf;
+	int32_t max_bf = (int32_t)nv_get_cap(enc, NV_ENC_CAPS_NUM_MAX_BFRAMES);
+	enc->bframes = bf <= max_bf ? bf : max_bf;
 
 	/* lookahead */
 	const bool use_profile_lookahead = config->rcParams.enableLookahead;
