@@ -823,8 +823,6 @@ OBSBasicSettings::OBSBasicSettings(QWidget *parent)
 		SLOT(AdvReplayBufferChanged()));
 	connect(ui->advRBSecMax, SIGNAL(valueChanged(int)), this,
 		SLOT(AdvReplayBufferChanged()));
-	connect(ui->listWidget, SIGNAL(currentRowChanged(int)), this,
-		SLOT(SimpleRecordingEncoderChanged()));
 
 	// Get Bind to IP Addresses
 	obs_properties_t *ppts = obs_get_output_properties("rtmp_output");
@@ -910,10 +908,10 @@ OBSBasicSettings::OBSBasicSettings(QWidget *parent)
 		SLOT(AdvOutRecCheckWarnings()));
 	connect(ui->advOutRecEncoder, SIGNAL(currentIndexChanged(int)), this,
 		SLOT(AdvOutRecCheckWarnings()));
-	AdvOutRecCheckWarnings();
 
 	SimpleRecordingQualityChanged();
 	AdvOutSplitFileChanged();
+	AdvOutRecCheckWarnings();
 
 	UpdateAutomaticReplayBufferCheckboxes();
 
@@ -3531,7 +3529,11 @@ void OBSBasicSettings::SaveOutputSettings()
 #endif
 	else if (encoder == SIMPLE_ENCODER_AMD)
 		presetType = "AMDPreset";
-	else if (encoder == SIMPLE_ENCODER_APPLE_H264)
+	else if (encoder == SIMPLE_ENCODER_APPLE_H264
+#ifdef ENABLE_HEVC
+		 || encoder == SIMPLE_ENCODER_APPLE_HEVC
+#endif
+	)
 		/* The Apple encoders don't have presets like the other encoders
          do. This only exists to make sure that the x264 preset doesn't
          get overwritten with empty data. */
@@ -4634,17 +4636,51 @@ void OBSBasicSettings::AdvOutRecCheckWarnings()
 			errorMsg = QTStr("OutputWarnings.NoTracksSelected");
 	}
 
-	if (ui->advOutRecFormat->currentText().compare("mp4") == 0 ||
-	    ui->advOutRecFormat->currentText().compare("mov") == 0) {
-		if (!warningMsg.isEmpty())
-			warningMsg += "\n\n";
-		warningMsg += QTStr("OutputWarnings.MP4Recording");
-		ui->autoRemux->setText(
-			QTStr("Basic.Settings.Advanced.AutoRemux") + " " +
-			QTStr("Basic.Settings.Advanced.AutoRemux.MP4"));
+	QString recFormat = ui->advOutRecFormat->currentText();
+	QString recEncoder = ui->advOutRecEncoder->currentText();
+
+	if (recEncoder.contains("ProRes")) {
+		if (recFormat.compare("mkv") == 0) {
+			ui->autoRemux->setText(
+				QTStr("Basic.Settings.Advanced.AutoRemux")
+					.arg("mov"));
+		} else if (recFormat.compare("mov") == 0) {
+			if (!warningMsg.isEmpty()) {
+				warningMsg += "\n\n";
+			}
+
+			warningMsg += QTStr("OutputWarnings.MP4Recording");
+			ui->autoRemux->setText(
+				QTStr("Basic.Settings.Advanced.AutoRemux")
+					.arg("mov") +
+				" " +
+				QTStr("Basic.Settings.Advanced.AutoRemux.MP4"));
+		} else {
+			if (!errorMsg.isEmpty()) {
+				errorMsg += "\n\n";
+			}
+
+			errorMsg += QTStr("OutputWarnings.ProResRecording")
+					    .arg(recFormat);
+		}
 	} else {
-		ui->autoRemux->setText(
-			QTStr("Basic.Settings.Advanced.AutoRemux"));
+		if (recFormat.compare("mp4") == 0 ||
+		    recFormat.compare("mov") == 0) {
+			if (!warningMsg.isEmpty()) {
+				warningMsg += "\n\n";
+			}
+
+			warningMsg += QTStr("OutputWarnings.MP4Recording");
+			ui->autoRemux->setText(
+				QTStr("Basic.Settings.Advanced.AutoRemux")
+					.arg("mp4") +
+				" " +
+				QTStr("Basic.Settings.Advanced.AutoRemux.MP4"));
+		} else {
+			ui->autoRemux->setText(
+				QTStr("Basic.Settings.Advanced.AutoRemux")
+					.arg("mp4"));
+		}
 	}
 
 	delete advOutRecWarning;
@@ -4794,6 +4830,17 @@ void OBSBasicSettings::FillSimpleRecordingValues()
 		ui->simpleOutRecEncoder->addItem(
 			ENCODER_STR("Hardware.Apple.H264"),
 			QString(SIMPLE_ENCODER_APPLE_H264));
+#ifdef ENABLE_HEVC
+	if (EncoderAvailable("com.apple.videotoolbox.videoencoder.ave.hevc")
+#ifndef __aarch64__
+	    && os_get_emulation_status() == true
+#endif
+	)
+		ui->simpleOutRecEncoder->addItem(
+			ENCODER_STR("Hardware.Apple.HEVC"),
+			QString(SIMPLE_ENCODER_APPLE_HEVC));
+#endif
+
 #undef ADD_QUALITY
 #undef ENCODER_STR
 }
@@ -4882,7 +4929,11 @@ void OBSBasicSettings::SimpleStreamingEncoderChanged()
 
 		defaultPreset = "balanced";
 		preset = curAMDPreset;
-	} else if (encoder == SIMPLE_ENCODER_APPLE_H264) {
+	} else if (encoder == SIMPLE_ENCODER_APPLE_H264
+#ifdef ENABLE_HEVC
+		   || encoder == SIMPLE_ENCODER_APPLE_HEVC
+#endif
+	) {
 		ui->simpleOutAdvanced->setChecked(false);
 		ui->simpleOutAdvanced->setVisible(false);
 		ui->simpleOutPreset->setVisible(false);
@@ -5134,11 +5185,11 @@ void OBSBasicSettings::SimpleRecordingEncoderChanged()
 			warning += "\n\n";
 		warning += QTStr("OutputWarnings.MP4Recording");
 		ui->autoRemux->setText(
-			QTStr("Basic.Settings.Advanced.AutoRemux") + " " +
-			QTStr("Basic.Settings.Advanced.AutoRemux.MP4"));
+			QTStr("Basic.Settings.Advanced.AutoRemux").arg("mp4") +
+			" " + QTStr("Basic.Settings.Advanced.AutoRemux.MP4"));
 	} else {
 		ui->autoRemux->setText(
-			QTStr("Basic.Settings.Advanced.AutoRemux"));
+			QTStr("Basic.Settings.Advanced.AutoRemux").arg("mp4"));
 	}
 
 	if (warning.isEmpty())
