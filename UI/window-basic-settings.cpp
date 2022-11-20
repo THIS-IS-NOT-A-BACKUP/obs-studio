@@ -997,7 +997,7 @@ void OBSBasicSettings::LoadColorSpaces()
 #define CF_I444_STR QTStr("Basic.Settings.Advanced.Video.ColorFormat.I444")
 #define CF_P010_STR QTStr("Basic.Settings.Advanced.Video.ColorFormat.P010")
 #define CF_I010_STR QTStr("Basic.Settings.Advanced.Video.ColorFormat.I010")
-#define CF_RGB_STR QTStr("Basic.Settings.Advanced.Video.ColorFormat.RGB")
+#define CF_BGRA_STR QTStr("Basic.Settings.Advanced.Video.ColorFormat.BGRA")
 
 void OBSBasicSettings::LoadColorFormats()
 {
@@ -1006,7 +1006,7 @@ void OBSBasicSettings::LoadColorFormats()
 	ui->colorFormat->addItem(CF_I444_STR, "I444");
 	ui->colorFormat->addItem(CF_P010_STR, "P010");
 	ui->colorFormat->addItem(CF_I010_STR, "I010");
-	ui->colorFormat->addItem(CF_RGB_STR, "RGB");
+	ui->colorFormat->addItem(CF_BGRA_STR, "RGB"); // Avoid config break
 }
 
 #define AV_FORMAT_DEFAULT_STR \
@@ -1729,6 +1729,8 @@ void OBSBasicSettings::LoadSimpleOutputSettings()
 						 "NVENCPreset2");
 	const char *amdPreset =
 		config_get_string(main->Config(), "SimpleOutput", "AMDPreset");
+	const char *amdAV1Preset = config_get_string(
+		main->Config(), "SimpleOutput", "AMDAV1Preset");
 	const char *custom = config_get_string(main->Config(), "SimpleOutput",
 					       "x264Settings");
 	const char *recQual =
@@ -1748,6 +1750,7 @@ void OBSBasicSettings::LoadSimpleOutputSettings()
 	curQSVPreset = qsvPreset;
 	curNVENCPreset = nvPreset;
 	curAMDPreset = amdPreset;
+	curAMDAV1Preset = amdAV1Preset;
 
 	audioBitrate = FindClosestAvailableAACBitrate(audioBitrate);
 
@@ -3491,6 +3494,8 @@ void OBSBasicSettings::SaveOutputSettings()
 #endif
 	else if (encoder == SIMPLE_ENCODER_AMD)
 		presetType = "AMDPreset";
+	else if (encoder == SIMPLE_ENCODER_AMD_AV1)
+		presetType = "AMDAV1Preset";
 	else if (encoder == SIMPLE_ENCODER_APPLE_H264
 #ifdef ENABLE_HEVC
 		 || encoder == SIMPLE_ENCODER_APPLE_HEVC
@@ -4776,6 +4781,10 @@ void OBSBasicSettings::FillSimpleRecordingValues()
 		ui->simpleOutRecEncoder->addItem(
 			ENCODER_STR("Hardware.AMD.H264"),
 			QString(SIMPLE_ENCODER_AMD));
+	if (EncoderAvailable("av1_texture_amf"))
+		ui->simpleOutRecEncoder->addItem(
+			ENCODER_STR("Hardware.AMD.AV1"),
+			QString(SIMPLE_ENCODER_AMD_AV1));
 	if (EncoderAvailable("com.apple.videotoolbox.videoencoder.ave.avc")
 #ifndef __aarch64__
 	    && os_get_emulation_status() == true
@@ -4892,6 +4901,15 @@ void OBSBasicSettings::SimpleStreamingEncoderChanged()
 		ui->simpleOutAdvanced->setVisible(false);
 		ui->simpleOutPreset->setVisible(false);
 		ui->simpleOutPresetLabel->setVisible(false);
+
+	} else if (encoder == SIMPLE_ENCODER_AMD_AV1) {
+		ui->simpleOutPreset->addItem("Speed", "speed");
+		ui->simpleOutPreset->addItem("Balanced", "balanced");
+		ui->simpleOutPreset->addItem("Quality", "quality");
+		ui->simpleOutPreset->addItem("High Quality", "highQuality");
+
+		defaultPreset = "balanced";
+		preset = curAMDAV1Preset;
 	} else {
 
 #define PRESET_STR(val) \

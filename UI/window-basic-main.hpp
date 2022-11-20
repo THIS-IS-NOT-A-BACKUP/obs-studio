@@ -70,6 +70,7 @@ class OBSBasicStats;
 #define SIMPLE_ENCODER_NVENC_HEVC "nvenc_hevc"
 #define SIMPLE_ENCODER_AMD "amd"
 #define SIMPLE_ENCODER_AMD_HEVC "amd_hevc"
+#define SIMPLE_ENCODER_AMD_AV1 "amd_av1"
 #define SIMPLE_ENCODER_APPLE_H264 "apple_h264"
 #define SIMPLE_ENCODER_APPLE_HEVC "apple_hevc"
 
@@ -636,6 +637,7 @@ private:
 	bool drawSpacingHelpers = true;
 
 	float GetDevicePixelRatio();
+	void SourceToolBarActionsSetEnabled(bool enable);
 
 	std::string lastScreenshot;
 	std::string lastReplay;
@@ -1031,6 +1033,7 @@ private slots:
 	void on_actionCenterToScreen_triggered();
 	void on_actionVerticalCenter_triggered();
 	void on_actionHorizontalCenter_triggered();
+	void on_actionSceneFilters_triggered();
 
 	void on_OBSBasic_customContextMenuRequested(const QPoint &pos);
 

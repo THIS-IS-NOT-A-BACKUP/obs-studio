@@ -3077,12 +3077,25 @@ void OBSBasic::UpdateContextBarDeferred(bool force)
 				  Qt::QueuedConnection, Q_ARG(bool, force));
 }
 
+void OBSBasic::SourceToolBarActionsSetEnabled(bool enable)
+{
+	ui->actionRemoveSource->setEnabled(enable);
+	ui->actionSourceProperties->setEnabled(enable);
+	ui->actionSourceUp->setEnabled(enable);
+	ui->actionSourceDown->setEnabled(enable);
+
+	RefreshToolBarStyling(ui->sourcesToolbar);
+}
+
 void OBSBasic::UpdateContextBar(bool force)
 {
+	OBSSceneItem item = GetCurrentSceneItem();
+	bool enable = item != nullptr;
+
+	SourceToolBarActionsSetEnabled(enable);
+
 	if (!ui->contextContainer->isVisible() && !force)
 		return;
-
-	OBSSceneItem item = GetCurrentSceneItem();
 
 	if (item) {
 		obs_source_t *source = obs_sceneitem_get_source(item);
@@ -10195,6 +10208,14 @@ void OBSBasic::on_sourcePropertiesButton_clicked()
 void OBSBasic::on_sourceFiltersButton_clicked()
 {
 	OpenFilters();
+}
+
+void OBSBasic::on_actionSceneFilters_triggered()
+{
+	OBSSource sceneSource = GetCurrentSceneSource();
+
+	if (sceneSource)
+		OpenFilters(sceneSource);
 }
 
 void OBSBasic::on_sourceInteractButton_clicked()
