@@ -952,16 +952,12 @@ static void UpdateWithPatchIfAvailable(const char *name, const char *hash,
 		update.fileSize = size;
 		update.patchable = true;
 
-		/* ensure the filename is unique */
-		static long increment = 0;
-
 		/* Since the patch depends on the previous version, we can
 		 * no longer rely on the temp name being unique to the
 		 * new file's hash */
 		update.tempPath = tempPath;
 		update.tempPath += L"\\";
 		update.tempPath += patchHashStr;
-		update.tempPath += std::to_wstring(increment++);
 		break;
 	}
 }
@@ -1641,9 +1637,6 @@ static bool Update(wchar_t *cmdLine)
 
 	unordered_set<wstring> tempFiles;
 	for (update_t &update : updates) {
-		if (update.patchable)
-			continue;
-
 		if (tempFiles.count(update.tempPath)) {
 			update.state = STATE_ALREADY_DOWNLOADED;
 			totalFileSize -= update.fileSize;
