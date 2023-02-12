@@ -488,6 +488,7 @@ OBSBasic::OBSBasic(QWidget *parent)
 
 	UpdatePreviewSafeAreas();
 	UpdatePreviewSpacingHelpers();
+	UpdatePreviewOverflowSettings();
 }
 
 static void SaveAudioDevice(const char *name, int channel, obs_data_t *parent,
@@ -587,6 +588,9 @@ void OBSBasic::copyActionsDynamicProperties()
 	for (QAction *x : ui->scenesToolbar->actions()) {
 		QWidget *temp = ui->scenesToolbar->widgetForAction(x);
 
+		if (!temp)
+			continue;
+
 		for (QByteArray &y : x->dynamicPropertyNames()) {
 			temp->setProperty(y, x->property(y));
 		}
@@ -595,6 +599,9 @@ void OBSBasic::copyActionsDynamicProperties()
 	for (QAction *x : ui->sourcesToolbar->actions()) {
 		QWidget *temp = ui->sourcesToolbar->widgetForAction(x);
 
+		if (!temp)
+			continue;
+
 		for (QByteArray &y : x->dynamicPropertyNames()) {
 			temp->setProperty(y, x->property(y));
 		}
@@ -602,6 +609,9 @@ void OBSBasic::copyActionsDynamicProperties()
 
 	for (QAction *x : ui->mixerToolbar->actions()) {
 		QWidget *temp = ui->mixerToolbar->widgetForAction(x);
+
+		if (!temp)
+			continue;
 
 		for (QByteArray &y : x->dynamicPropertyNames()) {
 			temp->setProperty(y, x->property(y));
@@ -10283,6 +10293,20 @@ void OBSBasic::UpdatePreviewSafeAreas()
 {
 	drawSafeAreas = config_get_bool(App()->GlobalConfig(), "BasicWindow",
 					"ShowSafeAreas");
+}
+
+void OBSBasic::UpdatePreviewOverflowSettings()
+{
+	bool hidden = config_get_bool(App()->GlobalConfig(), "BasicWindow",
+				      "OverflowHidden");
+	bool select = config_get_bool(App()->GlobalConfig(), "BasicWindow",
+				      "OverflowSelectionHidden");
+	bool always = config_get_bool(App()->GlobalConfig(), "BasicWindow",
+				      "OverflowAlwaysVisible");
+
+	ui->preview->SetOverflowHidden(hidden);
+	ui->preview->SetOverflowSelectionHidden(select);
+	ui->preview->SetOverflowAlwaysVisible(always);
 }
 
 void OBSBasic::SetDisplayAffinity(QWindow *window)
