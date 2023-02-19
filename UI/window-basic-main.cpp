@@ -77,12 +77,17 @@
 #include <sstream>
 
 #ifdef _WIN32
-#include "win-update/win-update.hpp"
+#include "update/win-update.hpp"
+#include "update/shared-update.hpp"
 #include "windows.h"
 #endif
 
 #if !defined(_WIN32) && defined(WHATSNEW_ENABLED)
-#include "nix-update/nix-update.hpp"
+#include "update/shared-update.hpp"
+#endif
+
+#ifdef ENABLE_SPARKLE_UPDATER
+#include "update/mac-update.hpp"
 #endif
 
 #include "ui_OBSBasic.h"
@@ -2040,7 +2045,8 @@ void OBSBasic::OBSInit()
 		QMetaObject::invokeMethod(this, "on_autoConfigure_triggered",
 					  Qt::QueuedConnection);
 
-#if defined(_WIN32) && (OBS_RELEASE_CANDIDATE > 0 || OBS_BETA > 0)
+#if (defined(_WIN32) || defined(__APPLE__)) && \
+	(OBS_RELEASE_CANDIDATE > 0 || OBS_BETA > 0)
 	/* Automatically set branch to "beta" the first time a pre-release build is run. */
 	if (!config_get_bool(App()->GlobalConfig(), "General",
 			     "AutoBetaOptIn")) {
@@ -3719,11 +3725,6 @@ bool OBSBasic::QueryRemoveSource(obs_source_t *source)
 
 #define UPDATE_CHECK_INTERVAL (60 * 60 * 24 * 4) /* 4 days */
 
-#if defined(ENABLE_SPARKLE_UPDATER)
-void init_sparkle_updater(bool update_to_undeployed);
-void trigger_sparkle_update();
-#endif
-
 void OBSBasic::TimedCheckForUpdates()
 {
 	if (App()->IsUpdaterDisabled())
@@ -3733,8 +3734,7 @@ void OBSBasic::TimedCheckForUpdates()
 		return;
 
 #if defined(ENABLE_SPARKLE_UPDATER)
-	init_sparkle_updater(config_get_bool(App()->GlobalConfig(), "General",
-					     "UpdateToUndeployed"));
+	CheckForUpdates(false);
 #elif _WIN32
 	long long lastUpdate = config_get_int(App()->GlobalConfig(), "General",
 					      "LastUpdateCheck");
@@ -3757,20 +3757,46 @@ void OBSBasic::TimedCheckForUpdates()
 
 void OBSBasic::CheckForUpdates(bool manualUpdate)
 {
-#if defined(ENABLE_SPARKLE_UPDATER)
-	trigger_sparkle_update();
-#elif _WIN32
+#if _WIN32
 	ui->actionCheckForUpdates->setEnabled(false);
 	ui->actionRepair->setEnabled(false);
 
 	if (updateCheckThread && updateCheckThread->isRunning())
 		return;
-
 	updateCheckThread.reset(new AutoUpdateThread(manualUpdate));
 	updateCheckThread->start();
-#endif
+#elif defined(ENABLE_SPARKLE_UPDATER)
+	ui->actionCheckForUpdates->setEnabled(false);
 
+	if (updateCheckThread && updateCheckThread->isRunning())
+		return;
+
+	MacUpdateThread *mut = new MacUpdateThread(manualUpdate);
+	connect(mut, &MacUpdateThread::Result, this,
+		&OBSBasic::MacBranchesFetched, Qt::QueuedConnection);
+	updateCheckThread.reset(mut);
+	updateCheckThread->start();
+#endif
 	UNUSED_PARAMETER(manualUpdate);
+}
+
+void OBSBasic::MacBranchesFetched(const QString &branch, bool manualUpdate)
+{
+#ifdef ENABLE_SPARKLE_UPDATER
+	static OBSSparkle *updater;
+
+	if (!updater) {
+		updater = new OBSSparkle(QT_TO_UTF8(branch),
+					 ui->actionCheckForUpdates);
+		return;
+	}
+
+	updater->setBranch(QT_TO_UTF8(branch));
+	updater->checkForUpdates(manualUpdate);
+#else
+	UNUSED_PARAMETER(branch);
+	UNUSED_PARAMETER(manualUpdate);
+#endif
 }
 
 void OBSBasic::updateCheckFinished()
@@ -9695,7 +9721,8 @@ void OBSBasic::ColorChange()
 				obs_data_get_string(curPrivData, "color");
 			const char *customColor = *oldColor != 0 ? oldColor
 								 : "#55FF0000";
-#ifndef _WIN32
+#ifdef __linux__
+			// TODO: Revisit hang on Ubuntu with native dialog
 			options |= QColorDialog::DontUseNativeDialog;
 #endif
 
