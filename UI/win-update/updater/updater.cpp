@@ -262,6 +262,7 @@ struct update_t {
 	state_t state = STATE_INVALID;
 	bool has_hash = false;
 	bool patchable = false;
+	bool compressed = false;
 
 	inline update_t() {}
 	inline update_t(const update_t &from)
@@ -274,7 +275,8 @@ struct update_t {
 		  fileSize(from.fileSize),
 		  state(from.state),
 		  has_hash(from.has_hash),
-		  patchable(from.patchable)
+		  patchable(from.patchable),
+		  compressed(from.compressed)
 	{
 		memcpy(hash, from.hash, sizeof(hash));
 		memcpy(downloadhash, from.downloadhash, sizeof(downloadhash));
@@ -291,7 +293,8 @@ struct update_t {
 		  fileSize(from.fileSize),
 		  state(from.state),
 		  has_hash(from.has_hash),
-		  patchable(from.patchable)
+		  patchable(from.patchable),
+		  compressed(from.compressed)
 	{
 		from.state = STATE_INVALID;
 
@@ -330,6 +333,7 @@ struct update_t {
 		state = from.state;
 		has_hash = from.has_hash;
 		patchable = from.patchable;
+		compressed = from.compressed;
 
 		memcpy(hash, from.hash, sizeof(hash));
 		memcpy(downloadhash, from.downloadhash, sizeof(downloadhash));
@@ -374,7 +378,9 @@ bool DownloadWorkerThread()
 
 	const DWORD enableHTTP2Flag = WINHTTP_PROTOCOL_FLAG_HTTP2;
 
-	HttpHandle hSession = WinHttpOpen(L"OBS Studio Updater/2.2",
+	const DWORD compressionFlags = WINHTTP_DECOMPRESSION_FLAG_ALL;
+
+	HttpHandle hSession = WinHttpOpen(L"OBS Studio Updater/3.0",
 					  WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
 					  WINHTTP_NO_PROXY_NAME,
 					  WINHTTP_NO_PROXY_BYPASS, 0);
@@ -390,6 +396,9 @@ bool DownloadWorkerThread()
 	WinHttpSetOption(hSession, WINHTTP_OPTION_ENABLE_HTTP_PROTOCOL,
 			 (LPVOID)&enableHTTP2Flag, sizeof(enableHTTP2Flag));
 
+	WinHttpSetOption(hSession, WINHTTP_OPTION_DECOMPRESSION,
+			 (LPVOID)&compressionFlags, sizeof(compressionFlags));
+
 	HttpHandle hConnect = WinHttpConnect(hSession,
 					     L"cdn-fastly.obsproject.com",
 					     INTERNET_DEFAULT_HTTPS_PORT, 0);
@@ -398,6 +407,8 @@ bool DownloadWorkerThread()
 		Status(L"Update failed: Couldn't connect to cdn-fastly.obsproject.com");
 		return false;
 	}
+
+	ZSTDDCtx zCtx;
 
 	for (;;) {
 		bool foundWork = false;
@@ -468,6 +479,20 @@ bool DownloadWorkerThread()
 				       L"failed on %s",
 				       update.outputPath.c_str());
 				return 1;
+			}
+
+			if (update.compressed && !update.patchable) {
+				int res = DecompressFile(
+					zCtx, update.tempPath.c_str(),
+					update.fileSize);
+				if (res) {
+					downloadThreadFailure = true;
+					DeleteFile(update.tempPath.c_str());
+					Status(L"Update failed: Decompression "
+					       L"failed on %s (error code %d)",
+					       update.outputPath.c_str(), res);
+					return 1;
+				}
 			}
 
 			ulock.lock();
@@ -712,6 +737,7 @@ static bool AddPackageUpdateFiles(const Json &root, size_t idx,
 		const Json &file = files[j];
 		const Json &fileName = file["name"];
 		const Json &hash = file["hash"];
+		const Json &dlHash = file["compressed_hash"];
 		const Json &size = file["size"];
 
 		if (!fileName.is_string())
@@ -723,21 +749,32 @@ static bool AddPackageUpdateFiles(const Json &root, size_t idx,
 
 		const string &fileUTF8 = fileName.string_value();
 		const string &hashUTF8 = hash.string_value();
+		const string &dlHashUTF8 = dlHash.string_value();
 		int fileSize = size.int_value();
 
 		if (hashUTF8.size() != BLAKE2_HASH_LENGTH * 2)
 			continue;
+
+		/* The download hash may not exist if a file is uncompressed */
+
+		bool compressed = false;
+		if (dlHashUTF8.size() == BLAKE2_HASH_LENGTH * 2)
+			compressed = true;
 
 		/* convert strings to wide */
 
 		wchar_t sourceURL[1024];
 		wchar_t updateFileName[MAX_PATH];
 		wchar_t updateHashStr[BLAKE2_HASH_STR_LENGTH];
+		wchar_t downloadHashStr[BLAKE2_HASH_STR_LENGTH];
 		wchar_t tempFilePath[MAX_PATH];
 
 		if (!UTF8ToWideBuf(updateFileName, fileUTF8.c_str()))
 			continue;
 		if (!UTF8ToWideBuf(updateHashStr, hashUTF8.c_str()))
+			continue;
+		if (compressed &&
+		    !UTF8ToWideBuf(downloadHashStr, dlHashUTF8.c_str()))
 			continue;
 
 		/* make sure paths are safe */
@@ -783,9 +820,17 @@ static bool AddPackageUpdateFiles(const Json &root, size_t idx,
 		update.packageName = packageName;
 		update.state = STATE_PENDING_DOWNLOAD;
 		update.patchable = false;
+		update.compressed = compressed;
 
-		StringToHash(updateHashStr, update.downloadhash);
-		memcpy(update.hash, update.downloadhash, sizeof(update.hash));
+		StringToHash(updateHashStr, update.hash);
+
+		if (compressed) {
+			update.sourceURL += L".zst";
+			StringToHash(downloadHashStr, update.downloadhash);
+		} else {
+			memcpy(update.downloadhash, update.hash,
+			       sizeof(update.downloadhash));
+		}
 
 		update.has_hash = has_hash;
 		if (has_hash)
@@ -952,7 +997,7 @@ static bool MoveInUseFileAway(update_t &file)
 	return false;
 }
 
-static bool UpdateFile(update_t &file)
+static bool UpdateFile(ZSTD_DCtx *ctx, update_t &file)
 {
 	wchar_t oldFileRenamedPath[MAX_PATH];
 
@@ -1009,7 +1054,7 @@ static bool UpdateFile(update_t &file)
 	retryAfterMovingFile:
 
 		if (file.patchable) {
-			error_code = ApplyPatch(file.tempPath.c_str(),
+			error_code = ApplyPatch(ctx, file.tempPath.c_str(),
 						file.outputPath.c_str());
 			installed_ok = (error_code == 0);
 
@@ -1059,9 +1104,10 @@ static bool UpdateFile(update_t &file)
 				       L"programs and try again.",
 				       curFileName);
 			} else {
+				DWORD err = GetLastError();
 				Status(L"Update failed: Couldn't update %s "
 				       L"(error %d)",
-				       curFileName, GetLastError());
+				       curFileName, err ? err : error_code);
 			}
 
 			file.state = STATE_INSTALL_FAILED;
@@ -1107,6 +1153,7 @@ static bool updateThreadFailed = false;
 static bool UpdateWorker()
 {
 	unique_lock<mutex> ulock(updateMutex, defer_lock);
+	ZSTDDCtx zCtx;
 
 	while (true) {
 		ulock.lock();
@@ -1120,7 +1167,7 @@ static bool UpdateWorker()
 		updateQueue.pop();
 		ulock.unlock();
 
-		if (!UpdateFile(update)) {
+		if (!UpdateFile(zCtx, update)) {
 			updateThreadFailed = true;
 			return false;
 		} else {
@@ -1173,7 +1220,9 @@ static bool UpdateVS2019Redists(const Json &root)
 
 	const DWORD tlsProtocols = WINHTTP_FLAG_SECURE_PROTOCOL_TLS1_2;
 
-	HttpHandle hSession = WinHttpOpen(L"OBS Studio Updater/2.2",
+	const DWORD compressionFlags = WINHTTP_DECOMPRESSION_FLAG_ALL;
+
+	HttpHandle hSession = WinHttpOpen(L"OBS Studio Updater/3.0",
 					  WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
 					  WINHTTP_NO_PROXY_NAME,
 					  WINHTTP_NO_PROXY_BYPASS, 0);
@@ -1184,6 +1233,9 @@ static bool UpdateVS2019Redists(const Json &root)
 
 	WinHttpSetOption(hSession, WINHTTP_OPTION_SECURE_PROTOCOLS,
 			 (LPVOID)&tlsProtocols, sizeof(tlsProtocols));
+
+	WinHttpSetOption(hSession, WINHTTP_OPTION_DECOMPRESSION,
+			 (LPVOID)&compressionFlags, sizeof(compressionFlags));
 
 	HttpHandle hConnect = WinHttpConnect(hSession,
 					     L"cdn-fastly.obsproject.com",
@@ -1564,14 +1616,20 @@ static bool Update(wchar_t *cmdLine)
 		int responseCode;
 
 		int len = (int)post_body.size();
-		uLong compressSize = compressBound(len);
+		size_t compressSize = ZSTD_compressBound(len);
 		string compressedJson;
 
 		compressedJson.resize(compressSize);
-		compress2((Bytef *)&compressedJson[0], &compressSize,
-			  (const Bytef *)post_body.c_str(), len,
-			  Z_BEST_COMPRESSION);
-		compressedJson.resize(compressSize);
+
+		size_t result =
+			ZSTD_compress(&compressedJson[0], compressedJson.size(),
+				      post_body.data(), post_body.size(),
+				      ZSTD_CLEVEL_DEFAULT);
+
+		if (ZSTD_isError(result))
+			return false;
+
+		compressedJson.resize(result);
 
 		wstring manifestUrl(PATCH_MANIFEST_URL);
 		if (branch != L"stable")
