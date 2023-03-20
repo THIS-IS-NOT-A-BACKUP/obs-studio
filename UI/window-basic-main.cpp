@@ -1336,7 +1336,25 @@ bool OBSBasic::LoadService()
 				     hotkey_data);
 	obs_service_release(service);
 
-	return !!service;
+	if (!service)
+		return false;
+
+	/* Enforce Opus on FTL if needed */
+	if (strcmp(obs_service_get_protocol(service), "FTL") == 0) {
+		const char *option = config_get_string(
+			basicConfig, "SimpleOutput", "StreamAudioEncoder");
+		if (strcmp(option, "opus") != 0)
+			config_set_string(basicConfig, "SimpleOutput",
+					  "StreamAudioEncoder", "opus");
+
+		option = config_get_string(basicConfig, "AdvOut",
+					   "AudioEncoder");
+		if (strcmp(obs_get_encoder_codec(option), "opus") != 0)
+			config_set_string(basicConfig, "AdvOut", "AudioEncoder",
+					  "ffmpeg_opus");
+	}
+
+	return true;
 }
 
 bool OBSBasic::InitService()
@@ -1485,6 +1503,10 @@ bool OBSBasic::InitBasicConfigDefaults()
 	config_set_default_int(basicConfig, "SimpleOutput", "RecRBSize", 512);
 	config_set_default_string(basicConfig, "SimpleOutput", "RecRBPrefix",
 				  "Replay");
+	config_set_default_string(basicConfig, "SimpleOutput",
+				  "StreamAudioEncoder", "aac");
+	config_set_default_string(basicConfig, "SimpleOutput",
+				  "RecAudioEncoder", "aac");
 
 	config_set_default_bool(basicConfig, "AdvOut", "ApplyServiceSettings",
 				true);
@@ -1628,6 +1650,17 @@ void OBSBasic::InitBasicConfigDefaults2()
 	config_set_default_string(basicConfig, "SimpleOutput", "RecEncoder",
 				  useNV ? SIMPLE_ENCODER_NVENC
 					: SIMPLE_ENCODER_X264);
+
+	const char *aac_default = "ffmpeg_aac";
+	if (EncoderAvailable("CoreAudio_AAC"))
+		aac_default = "CoreAudio_AAC";
+	else if (EncoderAvailable("libfdk_aac"))
+		aac_default = "libfdk_aac";
+
+	config_set_default_string(basicConfig, "AdvOut", "AudioEncoder",
+				  aac_default);
+	config_set_default_string(basicConfig, "AdvOut", "RecAudioEncoder",
+				  aac_default);
 
 	if (update_nvenc_presets(basicConfig))
 		config_save_safe(basicConfig, "tmp", nullptr);
