@@ -438,6 +438,7 @@ struct SimpleOutput : BasicOutputHandler {
 	OBSEncoder audioRecording;
 	OBSEncoder audioArchive;
 	OBSEncoder videoRecording;
+	OBSEncoder audioTrack[MAX_AUDIO_MIXES];
 
 	string videoEncoder;
 	string videoQuality;
@@ -502,8 +503,6 @@ void SimpleOutput::LoadRecordingPreset_Lossless()
 	obs_data_set_string(settings, "video_encoder", "utvideo");
 	obs_data_set_string(settings, "audio_encoder", "pcm_s16le");
 
-	int aMixes = 1;
-	obs_output_set_mixers(fileOutput, aMixes);
 	obs_output_update(fileOutput, settings);
 }
 
@@ -611,6 +610,25 @@ void SimpleOutput::LoadRecordingPreset()
 		if (!success)
 			throw "Failed to create audio recording encoder "
 			      "(simple output)";
+		for (int i = 0; i < MAX_AUDIO_MIXES; i++) {
+			char name[23];
+			if (strcmp(audio_encoder, "opus") == 0) {
+				snprintf(name, sizeof name,
+					 "simple_opus_recording%d", i);
+				success = CreateSimpleOpusEncoder(
+					audioTrack[i], GetAudioBitrate(), name,
+					i);
+			} else {
+				snprintf(name, sizeof name,
+					 "simple_aac_recording%d", i);
+				success = CreateSimpleAACEncoder(
+					audioTrack[i], GetAudioBitrate(), name,
+					i);
+			}
+			if (!success)
+				throw "Failed to create multi-track audio recording encoder "
+				      "(simple output)";
+		}
 	}
 }
 
@@ -813,7 +831,23 @@ void SimpleOutput::UpdateRecordingAudioSettings()
 	obs_data_set_int(settings, "bitrate", 192);
 	obs_data_set_string(settings, "rate_control", "CBR");
 
-	obs_encoder_update(audioRecording, settings);
+	int tracks =
+		config_get_int(main->Config(), "SimpleOutput", "RecTracks");
+	const char *recFormat =
+		config_get_string(main->Config(), "SimpleOutput", "RecFormat2");
+	const char *quality =
+		config_get_string(main->Config(), "SimpleOutput", "RecQuality");
+	bool flv = strcmp(recFormat, "flv") == 0;
+
+	if (flv || strcmp(quality, "Stream") == 0) {
+		obs_encoder_update(audioRecording, settings);
+	} else {
+		for (int i = 0; i < MAX_AUDIO_MIXES; i++) {
+			if ((tracks & (1 << i)) != 0) {
+				obs_encoder_update(audioTrack[i], settings);
+			}
+		}
+	}
 }
 
 #define CROSS_DIST_CUTOFF 2000.0
@@ -987,6 +1021,11 @@ inline void SimpleOutput::SetupOutputs()
 	obs_encoder_set_video(videoStreaming, obs_get_video());
 	obs_encoder_set_audio(audioStreaming, obs_get_audio());
 	obs_encoder_set_audio(audioArchive, obs_get_audio());
+	int tracks =
+		config_get_int(main->Config(), "SimpleOutput", "RecTracks");
+	const char *recFormat =
+		config_get_string(main->Config(), "SimpleOutput", "RecFormat2");
+	bool flv = strcmp(recFormat, "flv") == 0;
 
 	if (usingRecordingPreset) {
 		if (ffmpegOutput) {
@@ -994,8 +1033,21 @@ inline void SimpleOutput::SetupOutputs()
 					     obs_get_audio());
 		} else {
 			obs_encoder_set_video(videoRecording, obs_get_video());
-			obs_encoder_set_audio(audioRecording, obs_get_audio());
+			if (flv) {
+				obs_encoder_set_audio(audioRecording,
+						      obs_get_audio());
+			} else {
+				for (int i = 0; i < MAX_AUDIO_MIXES; i++) {
+					if ((tracks & (1 << i)) != 0) {
+						obs_encoder_set_audio(
+							audioTrack[i],
+							obs_get_audio());
+					}
+				}
+			}
 		}
+	} else {
+		obs_encoder_set_audio(audioRecording, obs_get_audio());
 	}
 }
 
@@ -1175,6 +1227,16 @@ bool SimpleOutput::StartStreaming(obs_service_t *service)
 
 void SimpleOutput::UpdateRecording()
 {
+	const char *recFormat =
+		config_get_string(main->Config(), "SimpleOutput", "RecFormat2");
+	bool flv = strcmp(recFormat, "flv") == 0;
+	int tracks =
+		config_get_int(main->Config(), "SimpleOutput", "RecTracks");
+	int idx = 0;
+	int idx2 = 0;
+	const char *quality =
+		config_get_string(main->Config(), "SimpleOutput", "RecQuality");
+
 	if (replayBufferActive || recordingActive)
 		return;
 
@@ -1190,11 +1252,33 @@ void SimpleOutput::UpdateRecording()
 
 	if (!ffmpegOutput) {
 		obs_output_set_video_encoder(fileOutput, videoRecording);
-		obs_output_set_audio_encoder(fileOutput, audioRecording, 0);
+		if (flv || strcmp(quality, "Stream") == 0) {
+			obs_output_set_audio_encoder(fileOutput, audioRecording,
+						     0);
+		} else {
+			for (int i = 0; i < MAX_AUDIO_MIXES; i++) {
+				if ((tracks & (1 << i)) != 0) {
+					obs_output_set_audio_encoder(
+						fileOutput, audioTrack[i],
+						idx++);
+				}
+			}
+		}
 	}
 	if (replayBuffer) {
 		obs_output_set_video_encoder(replayBuffer, videoRecording);
-		obs_output_set_audio_encoder(replayBuffer, audioRecording, 0);
+		if (flv || strcmp(quality, "Stream") == 0) {
+			obs_output_set_audio_encoder(replayBuffer,
+						     audioRecording, 0);
+		} else {
+			for (int i = 0; i < MAX_AUDIO_MIXES; i++) {
+				if ((tracks & (1 << i)) != 0) {
+					obs_output_set_audio_encoder(
+						replayBuffer, audioTrack[i],
+						idx2++);
+				}
+			}
+		}
 	}
 
 	recordingConfigured = true;
@@ -1205,7 +1289,7 @@ bool SimpleOutput::ConfigureRecording(bool updateReplayBuffer)
 	const char *path =
 		config_get_string(main->Config(), "SimpleOutput", "FilePath");
 	const char *format =
-		config_get_string(main->Config(), "SimpleOutput", "RecFormat");
+		config_get_string(main->Config(), "SimpleOutput", "RecFormat2");
 	const char *mux = config_get_string(main->Config(), "SimpleOutput",
 					    "MuxerCustom");
 	bool noSpace = config_get_bool(main->Config(), "SimpleOutput",
@@ -1222,6 +1306,8 @@ bool SimpleOutput::ConfigureRecording(bool updateReplayBuffer)
 		config_get_int(main->Config(), "SimpleOutput", "RecRBTime");
 	int rbSize =
 		config_get_int(main->Config(), "SimpleOutput", "RecRBSize");
+	int tracks =
+		config_get_int(main->Config(), "SimpleOutput", "RecTracks");
 
 	bool is_fragmented = strcmp(format, "fmp4") == 0 ||
 			     strcmp(format, "fmov") == 0;
@@ -1253,6 +1339,8 @@ bool SimpleOutput::ConfigureRecording(bool updateReplayBuffer)
 					       f.c_str(), ffmpegOutput);
 		obs_data_set_string(settings, ffmpegOutput ? "url" : "path",
 				    strPath.c_str());
+		if (ffmpegOutput)
+			obs_output_set_mixers(fileOutput, tracks);
 	}
 
 	// Use fragmented MOV/MP4 if user has not already specified custom movflags
@@ -1703,7 +1791,7 @@ inline void AdvancedOutput::SetupRecording()
 	int tracks;
 
 	const char *recFormat =
-		config_get_string(main->Config(), "AdvOut", "RecFormat");
+		config_get_string(main->Config(), "AdvOut", "RecFormat2");
 
 	bool is_fragmented = strcmp(recFormat, "fmp4") == 0 ||
 			     strcmp(recFormat, "fmov") == 0;
@@ -2124,7 +2212,7 @@ bool AdvancedOutput::StartRecording()
 							 : "RecFilePath");
 		recFormat = config_get_string(main->Config(), "AdvOut",
 					      ffmpegRecording ? "FFExtension"
-							      : "RecFormat");
+							      : "RecFormat2");
 		filenameFormat = config_get_string(main->Config(), "Output",
 						   "FilenameFormatting");
 		overwriteIfExists = config_get_bool(main->Config(), "Output",
@@ -2227,7 +2315,7 @@ bool AdvancedOutput::StartReplayBuffer()
 							 : "RecFilePath");
 		recFormat = config_get_string(main->Config(), "AdvOut",
 					      ffmpegRecording ? "FFExtension"
-							      : "RecFormat");
+							      : "RecFormat2");
 		filenameFormat = config_get_string(main->Config(), "Output",
 						   "FilenameFormatting");
 		overwriteIfExists = config_get_bool(main->Config(), "Output",
