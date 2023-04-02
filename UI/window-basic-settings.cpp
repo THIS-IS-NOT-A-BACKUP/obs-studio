@@ -23,6 +23,7 @@
 #include <initializer_list>
 #include <sstream>
 #include <unordered_map>
+#include <unordered_set>
 #include <QCompleter>
 #include <QGuiApplication>
 #include <QLineEdit>
@@ -4196,6 +4197,9 @@ bool OBSBasicSettings::QueryChanges()
 	if (button == QMessageBox::Cancel) {
 		return false;
 	} else if (button == QMessageBox::Yes) {
+		if (!QueryAllowedToClose())
+			return false;
+
 		SaveSettings();
 	} else {
 		if (savedTheme != App()->GetTheme())
@@ -4206,6 +4210,44 @@ bool OBSBasicSettings::QueryChanges()
 	}
 
 	ClearChanged();
+	return true;
+}
+
+bool OBSBasicSettings::QueryAllowedToClose()
+{
+	bool simple = (ui->outputMode->currentIndex() == 0);
+
+	bool invalidEncoder = false;
+	bool invalidFormat = false;
+	if (simple) {
+		if (ui->simpleOutRecEncoder->currentIndex() == -1 ||
+		    ui->simpleOutStrEncoder->currentIndex() == -1 ||
+		    ui->simpleOutRecAEncoder->currentIndex() == -1 ||
+		    ui->simpleOutStrAEncoder->currentIndex() == -1)
+			invalidEncoder = true;
+
+		if (ui->simpleOutRecFormat->currentIndex() == -1)
+			invalidFormat = true;
+	} else {
+		if (ui->advOutRecEncoder->currentIndex() == -1 ||
+		    ui->advOutEncoder->currentIndex() == -1 ||
+		    ui->advOutRecAEncoder->currentIndex() == -1 ||
+		    ui->advOutAEncoder->currentIndex() == -1)
+			invalidEncoder = true;
+	}
+
+	if (invalidEncoder) {
+		OBSMessageBox::warning(
+			this, QTStr("CodecCompat.CodecMissingOnExit.Title"),
+			QTStr("CodecCompat.CodecMissingOnExit.Text"));
+		return false;
+	} else if (invalidFormat) {
+		OBSMessageBox::warning(
+			this, QTStr("CodecCompat.ContainerMissingOnExit.Title"),
+			QTStr("CodecCompat.ContainerMissingOnExit.Text"));
+		return false;
+	}
+
 	return true;
 }
 
@@ -4258,6 +4300,9 @@ void OBSBasicSettings::on_buttonBox_clicked(QAbstractButton *button)
 
 	if (val == QDialogButtonBox::ApplyRole ||
 	    val == QDialogButtonBox::AcceptRole) {
+		if (!QueryAllowedToClose())
+			return;
+
 		SaveSettings();
 		ClearChanged();
 	}
@@ -4306,7 +4351,7 @@ void OBSBasicSettings::on_advOutFFPathBrowse_clicked()
 	ui->advOutFFRecPath->setText(dir);
 }
 
-void OBSBasicSettings::on_advOutEncoder_currentIndexChanged(int idx)
+void OBSBasicSettings::on_advOutEncoder_currentIndexChanged()
 {
 	QString encoder = GetComboData(ui->advOutEncoder);
 	if (!loading) {
@@ -4323,8 +4368,6 @@ void OBSBasicSettings::on_advOutEncoder_currentIndexChanged(int idx)
 
 	ui->advOutUseRescale->setVisible(true);
 	ui->advOutRescale->setVisible(true);
-
-	UNUSED_PARAMETER(idx);
 }
 
 void OBSBasicSettings::on_advOutRecEncoder_currentIndexChanged(int idx)
@@ -4933,6 +4976,37 @@ void OBSBasicSettings::AdvOutSplitFileChanged()
 	ui->advOutSplitFileSize->setVisible(splitFileType == 1);
 }
 
+static const unordered_set<string> builtin_codecs = {
+	"h264", "hevc", "av1",       "prores",    "aac",
+	"opus", "alac", "pcm_s16le", "pcm_s24le", "pcm_f32le"};
+
+static const unordered_map<string, unordered_set<string>> codec_compat = {
+	// Technically our muxer supports HEVC and AV1 as well, but nothing else does
+	{"flv", {"h264", "aac"}},
+	{"ts", {"h264", "hevc", "aac", "opus"}},
+	{"m3u8",
+	 {"h264", "hevc", "aac"}}, // Also using MPEG-TS, but no Opus support
+	{"mov",
+	 {"h264", "hevc", "prores", "aac", "alac", "pcm_s16le", "pcm_s24le",
+	  "pcm_f32le"}},
+	{"mp4", {"h264", "hevc", "av1", "aac", "opus", "alac", "flac"}},
+	// MKV supports everything
+	{"mkv", {}},
+};
+
+static bool ContainerSupportsCodec(const string &container, const string &codec)
+{
+	auto iter = codec_compat.find(container);
+	if (iter == codec_compat.end())
+		return false;
+
+	auto codecs = iter->second;
+	// Assume everything is supported
+	if (codecs.empty())
+		return true;
+	return codecs.count(codec) > 0;
+}
+
 static void DisableIncompatibleCodecs(QComboBox *cbox, const string &format,
 				      const QString &streamEncoder)
 {
@@ -4954,20 +5028,11 @@ static void DisableIncompatibleCodecs(QComboBox *cbox, const string &format,
 							   encoderId.c_str());
 		const char *codec = obs_get_encoder_codec(encoderId.c_str());
 
-		bool is_compatible = false;
-		/* FFmpeg's check does not work for MPEG-TS and MKV. */
-		if (format == "ts") {
-			is_compatible = strcmp(codec, "aac") == 0 ||
-					strcmp(codec, "opus") == 0 ||
-					strcmp(codec, "hevc") == 0 ||
-					strcmp(codec, "h264") == 0;
-		} else if (format == "mkv") {
-			/* MKV eats everything. */
-			is_compatible = true;
-		} else {
+		bool is_compatible = ContainerSupportsCodec(format, codec);
+		/* Fall back to FFmpeg check if codec not one of the built-in ones. */
+		if (!is_compatible && !builtin_codecs.count(codec))
 			is_compatible = ff_format_codec_compatible(
 				codec, format.c_str());
-		}
 
 		QStandardItemModel *model =
 			dynamic_cast<QStandardItemModel *>(cbox->model());
@@ -5011,8 +5076,6 @@ void OBSBasicSettings::AdvOutRecCheckCodecs()
 	/* Remove leading "f" for fragmented MP4/MOV */
 	if (format == "fmp4" || format == "fmov")
 		format = format.erase(0, 1);
-	else if (format == "m3u8")
-		format = "hls";
 
 	QString streamEncoder = ui->advOutEncoder->currentData().toString();
 
@@ -5031,7 +5094,8 @@ void OBSBasicSettings::AdvOutRecCheckCodecs()
 	AdvOutRecCheckWarnings();
 }
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && QT_VERSION < QT_VERSION_CHECK(6, 5, 1)
+// Workaround for QTBUG-56064 on macOS
 static void ResetInvalidSelection(QComboBox *cbox)
 {
 	int idx = cbox->currentIndex();
@@ -5094,7 +5158,7 @@ void OBSBasicSettings::AdvOutRecCheckWarnings()
 			QTStr("Basic.Settings.Advanced.AutoRemux").arg("mp4"));
 	}
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && QT_VERSION < QT_VERSION_CHECK(6, 5, 1)
 	// Workaround for QTBUG-56064 on macOS
 	ResetInvalidSelection(ui->advOutRecEncoder);
 	ResetInvalidSelection(ui->advOutRecAEncoder);
@@ -5655,23 +5719,12 @@ static void DisableIncompatibleSimpleCodecs(QComboBox *cbox,
 			codec = obs_get_encoder_codec(encoder_id);
 		}
 
-		bool is_compatible = true;
-		if (format == "flv") {
-			/* If FLV, only H.264 and AAC are compatible */
-			is_compatible = codec == "aac" || codec == "h264";
-		} else if (format == "mov" || format == "fmov") {
-			/* If MOV, Opus is not compatible */
-			is_compatible = codec != "opus";
-		} else if (format == "ts") {
-			/* If MPEG-TS, AV1 is incompatible */
-			is_compatible = codec != "av1";
-		}
-
 		QStandardItemModel *model =
 			dynamic_cast<QStandardItemModel *>(cbox->model());
 		QStandardItem *item = model->item(idx);
 
-		if (is_compatible) {
+		if (ContainerSupportsCodec(QT_TO_UTF8(format),
+					   QT_TO_UTF8(codec))) {
 			item->setFlags(Qt::ItemIsSelectable |
 				       Qt::ItemIsEnabled);
 		} else {
@@ -5701,23 +5754,12 @@ static void DisableIncompatibleSimpleContainer(QComboBox *cbox,
 	for (int idx = 0; idx < cbox->count(); idx++) {
 		QString format = cbox->itemData(idx).toString();
 
-		bool is_compatible = true;
-		if (format == "flv") {
-			/* If flv, ónly H.264 and AAC are compatible */
-			is_compatible = aCodec == "aac" && vCodec == "h264";
-		} else if (format == "mov" || format == "fmov") {
-			/* If MOV, Opus is not compatible */
-			is_compatible = aCodec != "opus";
-		} else if (format == "ts") {
-			/* If MPEG-TS, AV1 is incompatible */
-			is_compatible = vCodec != "av1";
-		}
-
 		QStandardItemModel *model =
 			dynamic_cast<QStandardItemModel *>(cbox->model());
 		QStandardItem *item = model->item(idx);
 
-		if (is_compatible) {
+		if (ContainerSupportsCodec(QT_TO_UTF8(format),
+					   QT_TO_UTF8(vCodec))) {
 			item->setFlags(Qt::ItemIsSelectable |
 				       Qt::ItemIsEnabled);
 		} else {
