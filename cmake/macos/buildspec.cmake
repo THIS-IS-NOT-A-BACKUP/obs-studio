@@ -14,7 +14,7 @@ macro(_check_deps_version version)
     if(EXISTS "${path}/share/obs-deps/VERSION")
       if(dependency STREQUAL qt6 AND NOT EXISTS "${path}/lib/cmake/Qt6/Qt6Config.cmake")
         set(found FALSE)
-        break()
+        continue()
       endif()
 
       file(READ "${path}/share/obs-deps/VERSION" _check_version)
@@ -70,6 +70,10 @@ function(_check_dependencies)
   set(cef_destination "cef_binary_VERSION_macos_ARCH")
 
   foreach(dependency IN ITEMS prebuilt qt6 cef)
+    if(dependency STREQUAL cef AND arch STREQUAL universal)
+      continue()
+    endif()
+
     # cmake-format: off
     string(JSON data GET ${dependency_data} ${dependency})
     string(JSON version GET ${data} version)
