@@ -1280,7 +1280,7 @@ retryScene:
 
 	disableSaving--;
 
-	if (vcamEnabled && vcamConfig.internal == VCamInternalType::Preview)
+	if (vcamEnabled)
 		outputHandler->UpdateVirtualCamOutputSource();
 
 	if (api) {
@@ -4857,6 +4857,14 @@ void OBSBasic::ClearSceneData()
 	for (int i = 0; i < MAX_CHANNELS; i++)
 		obs_set_output_source(i, nullptr);
 
+	/* Reset VCam to default to clear its private scene and any references
+	 * it holds. It will be reconfigured during loading. */
+	if (vcamEnabled) {
+		vcamConfig.type = VCamOutputType::InternalOutput;
+		vcamConfig.internal = VCamInternalType::Default;
+		outputHandler->UpdateVirtualCamOutputSource();
+	}
+
 	lastScene = nullptr;
 	swapScene = nullptr;
 	programScene = nullptr;
@@ -4886,6 +4894,11 @@ void OBSBasic::ClearSceneData()
 	do {
 		QApplication::sendPostedEvents(nullptr);
 	} while (obs_wait_for_destroy_queue());
+
+	/* Pump Qt events one final time to give remaining signals time to be
+	 * processed (since this happens after the destroy thread finishes and
+	 * the audio/video threads have processed their tasks). */
+	QApplication::sendPostedEvents(nullptr);
 
 	unsetCursor();
 
@@ -5274,7 +5287,8 @@ void OBSBasic::on_scenes_currentItemChanged(QListWidgetItem *current,
 
 	SetCurrentScene(source);
 
-	if (vcamEnabled && vcamConfig.internal == VCamInternalType::Preview)
+	if (vcamEnabled && vcamConfig.type == VCamOutputType::InternalOutput &&
+	    vcamConfig.internal == VCamInternalType::Preview)
 		outputHandler->UpdateVirtualCamOutputSource();
 
 	if (api)
