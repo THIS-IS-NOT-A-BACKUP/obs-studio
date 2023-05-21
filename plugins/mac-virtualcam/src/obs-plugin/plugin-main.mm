@@ -523,7 +523,7 @@ static bool virtualcam_output_start(void *data)
 		[vcam->machServer run];
 	}
 
-	if (!obs_output_begin_data_capture(vcam->output, 0)) {
+	if (!obs_output_begin_data_capture2(vcam->output)) {
 		return false;
 	}
 
@@ -626,10 +626,11 @@ static void virtualcam_output_raw_video(void *data, struct video_data *frame)
 			.presentationTimeStamp =
 				CMTimeMake(frame->timestamp, NSEC_PER_SEC)};
 
-		OSStatus result = CMSampleBufferCreateForImageBuffer(
-			kCFAllocatorDefault, frameRef, true, NULL, NULL,
-			vcam->formatDescription, &timingInfo, &sampleBuffer);
-		result = CMSimpleQueueEnqueue(vcam->queue, sampleBuffer);
+		CMSampleBufferCreateForImageBuffer(kCFAllocatorDefault,
+						   frameRef, true, NULL, NULL,
+						   vcam->formatDescription,
+						   &timingInfo, &sampleBuffer);
+		CMSimpleQueueEnqueue(vcam->queue, sampleBuffer);
 	} else {
 		// Share pixel buffer with clients
 		[vcam->machServer sendPixelBuffer:frameRef
