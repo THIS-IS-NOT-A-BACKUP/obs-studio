@@ -520,8 +520,7 @@ OBSBasic::OBSBasic(QWidget *parent)
 	connect(ui->broadcastButton, &QPushButton::clicked, this,
 		&OBSBasic::BroadcastButtonClicked);
 
-	connect(App(), &OBSApp::StyleChanged, this,
-		&OBSBasic::ResetProxyStyleSliders);
+	connect(App(), &OBSApp::StyleChanged, this, &OBSBasic::ThemeChanged);
 
 	QActionGroup *actionGroup = new QActionGroup(this);
 	actionGroup->addAction(ui->actionSceneListMode);
@@ -4495,8 +4494,6 @@ void OBSBasic::RenderMain(void *data, uint32_t, uint32_t)
 		 100.0f);
 	gs_reset_viewport();
 
-	window->ui->preview->DrawSceneEditing();
-
 	uint32_t targetCX = window->previewCX;
 	uint32_t targetCY = window->previewCY;
 
@@ -4509,6 +4506,8 @@ void OBSBasic::RenderMain(void *data, uint32_t, uint32_t)
 		RenderSafeAreas(window->topLine, targetCX, targetCY);
 		RenderSafeAreas(window->rightLine, targetCX, targetCY);
 	}
+
+	window->ui->preview->DrawSceneEditing();
 
 	if (window->drawSpacingHelpers)
 		window->ui->preview->DrawSpacingHelpers();
@@ -7511,16 +7510,17 @@ void OBSBasic::AutoRemux(QString input, bool no_show)
 	const char *format = config_get_string(
 		config, isSimpleMode ? "SimpleOutput" : "AdvOut", "RecFormat2");
 
-	/* AV1+PCM cannot be remuxed into any supported format (until FFmpeg 6.1) */
-	if (strcmp(vCodecName, "av1") == 0 &&
-	    strncmp(aCodecName, "pcm", 3) == 0)
+	bool audio_is_pcm = strncmp(aCodecName, "pcm", 3) == 0;
+	/* FFmpeg <= 6.0 cannot remux AV1+PCM into any supported format. */
+	if (audio_is_pcm && !ff_supports_pcm_in_mp4() &&
+	    strcmp(vCodecName, "av1") == 0)
 		return;
 
 	/* Retain original container for fMP4/fMOV */
 	if (strncmp(format, "fragmented", 10) == 0) {
 		output += "remuxed." + suffix;
 	} else if (strcmp(vCodecName, "prores") == 0 ||
-		   strncmp(aCodecName, "pcm", 3) == 0) {
+		   (audio_is_pcm && !ff_supports_pcm_in_mp4())) {
 		output += "mov";
 	} else {
 		output += "mp4";
@@ -10903,7 +10903,7 @@ float OBSBasic::GetDevicePixelRatio()
 	return dpi;
 }
 
-void OBSBasic::ResetProxyStyleSliders()
+void OBSBasic::ThemeChanged()
 {
 	/* Since volume/media sliders are using QProxyStyle, they are not
 	* updated when themes are changed, so re-initialize them. */
