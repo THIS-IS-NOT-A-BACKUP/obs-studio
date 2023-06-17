@@ -1,106 +1,58 @@
 # OBS CMake macOS compiler configuration module
 
-# Enable distinction between Clang and AppleClang
-if(POLICY CMP0025)
-  cmake_policy(SET CMP0025 NEW)
-endif()
-
-# Honor visibility presets for all target types (executable, shared, module, static)
-if(POLICY CMP0063)
-  cmake_policy(SET CMP0063 NEW)
-endif()
+include_guard(GLOBAL)
 
 include(ccache)
 include(compiler_common)
-include(simd)
 
-# Set C17 / C++17 standards as required and disable extensions
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+add_compile_options("$<$<NOT:$<COMPILE_LANGUAGE:Swift>>:-fopenmp-simd>")
 
-set(CMAKE_C_STANDARD 17)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS OFF)
+# Enable selection between arm64 and x86_64 targets
+if(NOT CMAKE_OSX_ARCHITECTURES)
+  set(CMAKE_OSX_ARCHITECTURES
+      arm64
+      CACHE STRING "Build architectures for macOS" FORCE)
+endif()
+set_property(CACHE CMAKE_OSX_ARCHITECTURES PROPERTY STRINGS arm64 x86_64)
 
-# Set symbols to be hidden by default for C and C++
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_C_VISIBILITY_PRESET hidden)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN TRUE)
+if(XCODE)
+  # Enable dSYM generator for release builds
+  string(APPEND CMAKE_C_FLAGS_RELEASE " -g")
+  string(APPEND CMAKE_CXX_FLAGS_RELEASE " -g")
+else()
+  option(ENABLE_COMPILER_TRACE "Enable clang time-trace (requires Ninja)" OFF)
+  mark_as_advanced(ENABLE_COMPILER_TRACE)
 
-# Add default C and C++ compiler options if Xcode generator is not used
-if(NOT XCODE)
-  set(_obs_c_options
-      # cmake-format: sortable
-      -fno-strict-aliasing
-      -Wbool-conversion
-      -Wcomma
-      -Wconstant-conversion
-      -Wdeprecated-declarations
-      -Wempty-body
-      -Wenum-conversion
-      -Werror
-      -Werror=block-capture-autoreleasing
-      -Werror=return-type
-      -Wextra
-      -Wformat
-      -Wformat-security
-      -Wfour-char-constants
-      -Winfinite-recursion
-      -Wint-conversion
-      -Wnewline-eof
-      -Wno-conversion
-      -Wno-float-conversion
-      -Wno-implicit-fallthrough
-      -Wno-missing-braces
-      -Wno-missing-field-initializers
-      -Wno-missing-prototypes
-      -Wno-semicolon-before-method-body
-      -Wno-shadow
-      -Wno-sign-conversion
-      -Wno-trigraphs
-      -Wno-unknown-pragmas
-      -Wno-unused-function
-      -Wno-unused-label
-      -Wnon-literal-null-conversion
-      -Wobjc-literal-conversion
-      -Wparentheses
-      -Wpointer-sign
-      -Wquoted-include-in-framework-header
-      -Wshorten-64-to-32
-      -Wsign-compare
-      -Wstrict-prototypes
-      -Wswitch
-      -Wuninitialized
-      -Wunreachable-code
-      -Wunused-parameter
-      -Wunused-value
-      -Wunused-variable
-      -Wvla)
-
-  set(_obs_cxx_options
-      # cmake-format: sortable
-      -Warc-repeated-use-of-weak
-      -Wconversion
-      -Wdeprecated-implementations
-      -Wduplicate-method-match
-      -Wfloat-conversion
-      -Wfour-char-constants
-      -Wimplicit-retain-self
-      -Winvalid-offsetof
-      -Wmove
-      -Wno-arc-maybe-repeated-use-of-weak
-      -Wno-exit-time-destructors
+  # clang options for ObjC
+  set(_obs_clang_objc_options
+      ${_obs_clang_common_options}
       -Wno-implicit-atomic-properties
-      -Wno-non-virtual-dtor
       -Wno-objc-interface-ivars
-      -Wno-overloaded-virtual
+      -Warc-repeated-use-of-weak
+      -Wno-arc-maybe-repeated-use-of-weak
+      -Wimplicit-retain-self
+      -Wduplicate-method-match
+      -Wshadow
+      -Wfloat-conversion
+      -Wobjc-literal-conversion
       -Wno-selector
       -Wno-strict-selector-match
+      -Wundeclared-selector
+      -Wdeprecated-implementations
       -Wprotocol
-      -Wrange-loop-analysis
-      -Wshadow
-      -Wundeclared-selector)
+      -Werror=block-capture-autoreleasing
+      -Wrange-loop-analysis)
+
+  # clang options for ObjC++
+  set(_obs_clang_objcxx_options ${_obs_clang_objc_options} -Wno-non-virtual-dtor)
+
+  # cmake-format: off
+  add_compile_options(
+    "$<$<COMPILE_LANGUAGE:C>:${_obs_clang_c_options}>"
+    "$<$<COMPILE_LANGUAGE:CXX>:${_obs_clang_cxx_options}>"
+    "$<$<COMPILE_LANGUAGE:OBJC>:${_obs_clang_objc_options}>"
+    "$<$<COMPILE_LANGUAGE:OBJCXX>:${_obs_clang_objcxx_options}>")
+  # cmake-format: on
 
   # Enable stripping of dead symbols when not building for Debug configuration
   set(_release_configs RelWithDebInfo Release MinSizeRel)
@@ -108,11 +60,8 @@ if(NOT XCODE)
     add_link_options(LINKER:-dead_strip)
   endif()
 
-  add_compile_options("$<$<COMPILE_LANGUAGE:C>:${_obs_c_options}>"
-                      "$<$<COMPILE_LANGUAGE:CXX>:${_obs_c_options} ${_obs_cxx_options}>")
-
-  option(ENABLE_COMPILER_TRACE "Enable clang time-trace (requires Ninja)" OFF)
-  mark_as_advanced(ENABLE_COMPILER_TRACE)
+  # Enable color diagnostics for AppleClang
+  set(CMAKE_COLOR_DIAGNOSTICS ON)
 
   # Add time trace option to compiler, if enabled.
   if(ENABLE_COMPILER_TRACE AND CMAKE_GENERATOR STREQUAL "Ninja")
@@ -122,9 +71,7 @@ if(NOT XCODE)
         OFF
         CACHE BOOL "Enable clang time-trace (requires Ninja)" FORCE)
   endif()
-
-  # Enable color diagnostics for AppleClang
-  set(CMAKE_COLOR_DIAGNOSTICS ON)
 endif()
 
-add_compile_definitions("$<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<CONFIG:DEBUG>>:DEBUG;_DEBUG>")
+add_compile_definitions(
+  "$<$<NOT:$<COMPILE_LANGUAGE:Swift>>:$<$<CONFIG:DEBUG>:DEBUG>;$<$<CONFIG:DEBUG>:_DEBUG>;SIMDE_ENABLE_OPENMP>")
