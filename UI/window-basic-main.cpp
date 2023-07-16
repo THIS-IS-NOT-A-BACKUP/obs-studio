@@ -281,7 +281,9 @@ extern void RegisterYoutubeAuth();
 #endif
 
 OBSBasic::OBSBasic(QWidget *parent)
-	: OBSMainWindow(parent), undo_s(ui), ui(new Ui::OBSBasic)
+	: OBSMainWindow(parent),
+	  undo_s(ui),
+	  ui(new Ui::OBSBasic)
 {
 	setAttribute(Qt::WA_NativeWindow);
 
@@ -2275,7 +2277,8 @@ void OBSBasic::OBSInit()
 	UpdatePreviewProgramIndicators();
 	OnFirstLoad();
 
-	activateWindow();
+	if (!hideWindowOnStart)
+		activateWindow();
 
 	/* ------------------------------------------- */
 	/* display warning message for failed modules  */
@@ -3544,7 +3547,9 @@ void OBSBasic::UnhideAllAudioControls()
 	using UnhideAudioMixer_t = decltype(UnhideAudioMixer);
 
 	auto PreEnum = [](void *data, obs_source_t *source) -> bool /* -- */
-	{ return (*reinterpret_cast<UnhideAudioMixer_t *>(data))(source); };
+	{
+		return (*reinterpret_cast<UnhideAudioMixer_t *>(data))(source);
+	};
 
 	obs_enum_sources(PreEnum, &UnhideAudioMixer);
 }
@@ -5071,6 +5076,10 @@ void OBSBasic::closeEvent(QCloseEvent *event)
 	if (api)
 		api->on_event(OBS_FRONTEND_EVENT_EXIT);
 
+	// Destroys the frontend API so plugins can't continue calling it
+	obs_frontend_set_callbacks_internal(nullptr);
+	api = nullptr;
+
 	QMetaObject::invokeMethod(App(), "quit", Qt::QueuedConnection);
 }
 
@@ -5829,7 +5838,8 @@ QMenu *OBSBasic::AddBackgroundColorMenu(QMenu *menu,
 }
 
 ColorSelect::ColorSelect(QWidget *parent)
-	: QWidget(parent), ui(new Ui::ColorSelect)
+	: QWidget(parent),
+	  ui(new Ui::ColorSelect)
 {
 	ui->setupUi(this);
 }
