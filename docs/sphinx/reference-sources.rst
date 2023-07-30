@@ -410,6 +410,15 @@ Source Definition Structure (obs_source_info)
    :param event:       Key event properties
    :param focus:       Key event type (true if mouse-up)
 
+.. member:: void (*obs_source_info.filter_add)(void *data, obs_source_t *source)
+
+   Called when the filter is added to a source.
+
+   (Optional)
+
+   :param  data:   Filter data
+   :param  source: Source that the filter is being added to
+
 .. member:: void (*obs_source_info.filter_remove)(void *data, obs_source_t *source)
 
    Called when the filter is removed from a source.
@@ -1461,6 +1470,9 @@ Functions used by sources
 
            /* packed 4:2:2 format, 10 bpp */
            VIDEO_FORMAT_V210,
+
+           /* packed uncompressed 10-bit format */
+           VIDEO_FORMAT_R10L,
    };
 
    struct obs_source_frame {
@@ -1547,7 +1559,7 @@ Filters
    reference.
 
    Only guaranteed to be valid inside of the video_render, filter_audio,
-   filter_video, and filter_remove callbacks.
+   filter_video, filter_add, and filter_remove callbacks.
 
 ---------------------
 

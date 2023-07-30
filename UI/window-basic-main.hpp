@@ -507,7 +507,7 @@ private:
 	bool sceneDuplicationMode = true;
 	bool swapScenesMode = true;
 	volatile bool previewProgramMode = false;
-	obs_hotkey_id togglePreviewProgramHotkey = 0;
+	obs_hotkey_pair_id togglePreviewProgramHotkeys = 0;
 	obs_hotkey_id transitionHotkey = 0;
 	obs_hotkey_id statsHotkey = 0;
 	obs_hotkey_id screenshotHotkey = 0;
@@ -758,8 +758,8 @@ private slots:
 
 	void ProcessHotkey(obs_hotkey_id id, bool pressed);
 
-	void AddTransition();
-	void RenameTransition();
+	void AddTransition(const char *id);
+	void RenameTransition(OBSSource transition);
 	void TransitionClicked();
 	void TransitionStopped();
 	void TransitionFullyStopped();
@@ -806,13 +806,14 @@ private slots:
 	void EnablePreview();
 	void DisablePreview();
 
+	void EnablePreviewProgram();
+	void DisablePreviewProgram();
+
 	void SceneCopyFilters();
 	void ScenePasteFilters();
 
 	void CheckDiskSpaceRemaining();
 	void OpenSavedProjector(SavedProjectorInfo *info);
-
-	void ScenesReordered();
 
 	void ResetStatsHotkey();
 
@@ -986,8 +987,19 @@ public:
 	const char *GetCurrentOutputPath();
 
 	void DeleteProjector(OBSProjector *projector);
-	void AddProjectorMenuMonitors(QMenu *parent, QObject *target,
-				      const char *slot);
+
+	static QList<QString> GetProjectorMenuMonitorsFormatted();
+	template<typename Receiver, typename... Args>
+	static void AddProjectorMenuMonitors(QMenu *parent, Receiver *target,
+					     void (Receiver::*slot)(Args...))
+	{
+		auto projectors = GetProjectorMenuMonitorsFormatted();
+		for (int i = 0; i < projectors.size(); i++) {
+			QString str = projectors[i];
+			QAction *action = parent->addAction(str, target, slot);
+			action->setProperty("monitor", i);
+		}
+	}
 
 	QIcon GetSourceIcon(const char *id) const;
 	QIcon GetGroupIcon() const;
@@ -1173,8 +1185,6 @@ private slots:
 	void openLogDialog(const QString &text, const bool crash);
 
 	void updateCheckFinished();
-
-	void AddSourceFromAction();
 
 	void MoveSceneToTop();
 	void MoveSceneToBottom();
