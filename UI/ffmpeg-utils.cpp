@@ -26,79 +26,33 @@ extern "C" {
 
 using namespace std;
 
-static void GetCodecsForId(const FFmpegFormat &format,
-			   vector<FFmpegCodec> &codecs, enum AVCodecID id,
-			   bool ignore_compaibility)
-{
-
-	const AVCodec *codec = nullptr;
-	void *i = 0;
-
-	while ((codec = av_codec_iterate(&i)) != nullptr) {
-		if (codec->id != id)
-			continue;
-		// Not an encoding codec
-		if (!av_codec_is_encoder(codec))
-			continue;
-		// Skip if not supported and compatibility check not disabled
-		if (!ignore_compaibility &&
-		    !av_codec_get_tag(format.codec_tags, codec->id)) {
-			continue;
-		}
-
-		FFmpegCodec d{codec->name, codec->long_name, codec->id};
-
-		const AVCodec *base_codec = avcodec_find_encoder(codec->id);
-		if (strcmp(base_codec->name, codec->name) != 0) {
-			d.alias = true;
-			d.base_name = base_codec->name;
-		}
-
-		switch (codec->type) {
-		case AVMEDIA_TYPE_AUDIO:
-			d.type = FFmpegCodecType::AUDIO;
-			break;
-		case AVMEDIA_TYPE_VIDEO:
-			d.type = FFmpegCodecType::VIDEO;
-			break;
-		default:
-			d.type = FFmpegCodecType::UNKNOWN;
-		}
-
-		codecs.push_back(d);
-	}
-}
-
-static std::vector<const AVCodecDescriptor *> GetCodecDescriptors()
-{
-	std::vector<const AVCodecDescriptor *> codecs;
-
-	const AVCodecDescriptor *desc = nullptr;
-	while ((desc = avcodec_descriptor_next(desc)) != nullptr)
-		codecs.push_back(desc);
-
-	return codecs;
-}
-
 vector<FFmpegCodec> GetFormatCodecs(const FFmpegFormat &format,
 				    bool ignore_compatibility)
 {
 	vector<FFmpegCodec> codecs;
-	auto codecDescriptors = GetCodecDescriptors();
+	const AVCodec *codec;
+	void *i = 0;
 
-	if (codecDescriptors.empty())
-		return codecs;
+	while ((codec = av_codec_iterate(&i)) != nullptr) {
+		// Not an encoding codec
+		if (!av_codec_is_encoder(codec))
+			continue;
+		// Skip if not supported and compatibility check not disabled
+		if (!ignore_compatibility &&
+		    !av_codec_get_tag(format.codec_tags, codec->id)) {
+			continue;
+		}
 
-	for (const AVCodecDescriptor *codec : codecDescriptors)
-		GetCodecsForId(format, codecs, codec->id, ignore_compatibility);
+		codecs.emplace_back(codec);
+	}
 
 	return codecs;
 }
 
-static inline bool is_output_device(const AVClass *avclass)
+static bool is_output_device(const AVClass *avclass)
 {
 	if (!avclass)
-		return 0;
+		return false;
 
 	switch (avclass->category) {
 	case AV_CLASS_CATEGORY_DEVICE_VIDEO_OUTPUT:
@@ -120,43 +74,25 @@ vector<FFmpegFormat> GetSupportedFormats()
 		if (is_output_device(output_format->priv_class))
 			continue;
 
-		formats.push_back({
-			output_format->name,
-			output_format->long_name,
-			output_format->mime_type,
-			output_format->extensions,
-			output_format->audio_codec,
-			output_format->video_codec,
-			output_format->codec_tag,
-		});
+		formats.emplace_back(output_format);
 	}
 
 	return formats;
 }
 
-static const char *get_encoder_name(const char *format_name,
-				    enum AVCodecID codec_id)
+FFmpegCodec FFmpegFormat::GetDefaultEncoder(FFmpegCodecType codec_type) const
 {
-	const AVCodec *codec = avcodec_find_encoder(codec_id);
-	if (codec == nullptr && codec_id == AV_CODEC_ID_NONE)
-		return nullptr;
-	else if (codec == nullptr)
-		return format_name;
-	else
-		return codec->name;
-}
+	const AVCodecID codec_id = codec_type == VIDEO ? video_codec
+						       : audio_codec;
+	if (codec_type == UNKNOWN || codec_id == AV_CODEC_ID_NONE)
+		return {};
 
-const char *FFmpegFormat::GetDefaultName(FFmpegCodecType codec_type) const
-{
+	if (auto codec = avcodec_find_encoder(codec_id))
+		return {codec};
 
-	switch (codec_type) {
-	case FFmpegCodecType::AUDIO:
-		return get_encoder_name(name, audio_codec);
-	case FFmpegCodecType::VIDEO:
-		return get_encoder_name(name, video_codec);
-	default:
-		return nullptr;
-	}
+	/* Fall back to using the format name as the encoder,
+	 * this works for some formats such as FLV. */
+	return FFmpegCodec{name, codec_id, codec_type};
 }
 
 bool FFCodecAndFormatCompatible(const char *codec, const char *format)
@@ -169,7 +105,7 @@ bool FFCodecAndFormatCompatible(const char *codec, const char *format)
 #else
 	const AVOutputFormat *output_format;
 #endif
-	output_format = av_guess_format(format, NULL, NULL);
+	output_format = av_guess_format(format, nullptr, nullptr);
 	if (!output_format)
 		return false;
 
