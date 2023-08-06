@@ -2192,6 +2192,12 @@ void OBSBasic::OBSInit()
 	}
 #endif
 
+#ifdef YOUTUBE_ENABLED
+	/* setup YouTube app dock */
+	if (YouTubeAppDock::IsYTServiceSelected())
+		youtubeAppDock = new YouTubeAppDock();
+#endif
+
 	const char *dockStateStr = config_get_string(
 		App()->GlobalConfig(), "BasicWindow", "DockState");
 
@@ -2335,12 +2341,6 @@ void OBSBasic::OBSInit()
 
 	UpdatePreviewProgramIndicators();
 	OnFirstLoad();
-
-#ifdef YOUTUBE_ENABLED
-	/* setup YouTube app dock */
-	if (YouTubeAppDock::IsYTServiceSelected())
-		youtubeAppDock = new YouTubeAppDock();
-#endif
 
 	if (!hideWindowOnStart)
 		activateWindow();
@@ -3393,16 +3393,20 @@ void OBSBasic::SourceToolBarActionsSetEnabled()
 
 void OBSBasic::UpdateTransformShortcuts()
 {
+	bool hasVideo = false;
+
 	OBSSource source = obs_sceneitem_get_source(GetCurrentSceneItem());
-	uint32_t flags = obs_source_get_output_flags(source);
-	bool audioOnly = (flags & OBS_SOURCE_VIDEO) == 0;
 
-	ui->actionEditTransform->setEnabled(!audioOnly);
-	ui->actionCopyTransform->setEnabled(!audioOnly);
-	ui->actionPasteTransform->setEnabled(audioOnly ? false
-						       : hasCopiedTransform);
+	if (source) {
+		uint32_t flags = obs_source_get_output_flags(source);
+		hasVideo = (flags & OBS_SOURCE_VIDEO) != 0;
+	}
 
-	ui->actionResetTransform->setEnabled(!audioOnly);
+	ui->actionEditTransform->setEnabled(hasVideo);
+	ui->actionCopyTransform->setEnabled(hasVideo);
+	ui->actionPasteTransform->setEnabled(hasVideo ? hasCopiedTransform
+						      : false);
+	ui->actionResetTransform->setEnabled(hasVideo);
 }
 
 void OBSBasic::UpdateContextBar(bool force)
@@ -9413,7 +9417,7 @@ void OBSBasic::UpdateTitleBar()
 
 	name << App()->GetVersionString(false);
 	if (safe_mode)
-		name << " (SAFE MODE)";
+		name << " (" << Str("TitleBar.SafeMode") << ")";
 	if (App()->IsPortableMode())
 		name << " - " << Str("TitleBar.PortableMode");
 
