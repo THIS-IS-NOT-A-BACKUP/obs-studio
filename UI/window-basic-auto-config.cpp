@@ -136,7 +136,7 @@ AutoConfigVideoPage::AutoConfigVideoPage(QWidget *parent)
 		(long double)ovi.fps_num / (long double)ovi.fps_den;
 
 	QString fpsStr = (ovi.fps_den > 1) ? QString::number(fpsVal, 'f', 2)
-					   : QString::number(fpsVal, 'g', 2);
+					   : QString::number(fpsVal, 'g');
 
 	ui->fps->addItem(QTStr(FPS_PREFER_HIGH_FPS),
 			 (int)AutoConfig::FPSType::PreferHighFPS);
@@ -1094,7 +1094,7 @@ void AutoConfig::SaveStreamSettings()
 		obs_data_set_string(settings, "service", serviceName.c_str());
 	obs_data_set_string(settings, "server", server.c_str());
 #ifdef YOUTUBE_ENABLED
-	if (!IsYouTubeService(serviceName))
+	if (!streamPage->auth || !IsYouTubeService(serviceName))
 		obs_data_set_string(settings, "key", key.c_str());
 #else
 	obs_data_set_string(settings, "key", key.c_str());
