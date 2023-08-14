@@ -544,8 +544,10 @@ Source Definition Structure (obs_source_info)
 
 .. _source_signal_handler_reference:
 
-Source Signals
---------------
+Common Source Signals
+---------------------
+
+The following signals are defined for every source type:
 
 **destroy** (ptr *source*)
 
@@ -671,37 +673,161 @@ Source Signals
 
    Called when a transition has stopped.
 
-**media_started**
+**media_started** (ptr source)
 
    Called when media has started.
 
-**media_ended**
+**media_ended** (ptr source)
 
    Called when media has ended.
 
-**media_pause**
+**media_pause** (ptr source)
 
    Called when media has been paused.
 
-**media_play**
+**media_play** (ptr source)
 
    Called when media starts playing.
 
-**media_restart**
+**media_restart** (ptr source)
 
    Called when the playing of media has been restarted.
 
-**media_stopped**
+**media_stopped** (ptr source)
 
    Called when the playing of media has been stopped.
 
-**media_next**
+**media_next** (ptr source)
 
    Called when the media source switches to the next media.
 
-**media_previous**
+**media_previous** (ptr source)
 
    Called when the media source switches to the previous media.
+
+
+Source-specific Signals
+-----------------------
+
+The following signals are defined for specific sources only:
+
+**slide_changed** (int index, string path)
+
+   Called when the source's currently displayed image changes.
+
+   :Defined by: - Image Slide Show
+
+-----------------------
+
+**hooked** (ptr source, string title, string class, string executable)
+
+   Called when the source successfully captures an existing window.
+
+   :Defined by: - Window Capture (Windows)
+                - Game Capture (Windows)
+                - Application Audio Output Capture (Windows)
+
+-----------------------
+
+**hooked** (ptr source, string name, string class)
+
+   Called when the source successfully captures an existing window.
+
+   :Defined by: - Window Capture (Xcomposite)
+
+-----------------------
+
+**unhooked** (ptr source)
+
+   Called when the source stops capturing.
+
+   :Defined by: - Window Capture (Windows)
+                - Game Capture (Windows)
+                - Application Audio Output Capture (Windows)
+                - Window Capture (Xcomposite)
+
+-----------------------
+
+
+Source-specific Procedures
+--------------------------
+
+The following procedures are defined for specific sources only:
+
+**current_index** (out int current_index)
+
+   Returns the index of the currently displayed image in the slideshow.
+
+   :Defined by: - Image Slide Show
+
+-----------------------
+
+**total_files** (out int total_files)
+
+   Returns the total number of image files in the slideshow.
+
+   :Defined by: - Image Slide Show
+
+-----------------------
+
+**get_hooked** (out bool hooked, out string title, out string class, out string executable)
+
+   Returns whether the source is currently capturing a window and if yes, which.
+
+   :Defined by: - Window Capture (Windows)
+                - Game Capture (Windows)
+                - Application audio output capture (Windows)
+
+-----------------------
+
+**get_hooked** (out bool hooked, out string name, out string class)
+
+   Returns whether the source is currently capturing a window and if yes, which.
+
+   :Defined by: - Window Capture (Xcomposite)
+
+-----------------------
+
+**get_metadata** (in string tag_id, out string tag_data)
+
+   For a given metadata tag, returns the data associated with it.
+
+   :Defined by: - VLC Video Source
+
+-----------------------
+
+**restart** ()
+
+   Restarts the media.
+
+   :Defined by: - Media Source
+
+-----------------------
+
+**get_duration** (out int duration)
+
+   Returns the total duration of the media file, in nanoseconds.
+
+   :Defined by: - Media Source
+
+-----------------------
+
+**get_nb_frames** (out int num_frames)
+
+   Returns the total number of frames in the media file.
+
+   :Defined by: - Media Source
+
+-----------------------
+
+**activate** (in bool active)
+
+   Activates or deactivates the device.
+
+   :Defined by: - Video Capture Device Source (Windows)
+
+-----------------------
+
 
 General Source Functions
 ------------------------
