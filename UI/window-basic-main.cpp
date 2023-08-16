@@ -84,6 +84,10 @@
 #include "windows.h"
 #endif
 
+#ifdef WHATSNEW_ENABLED
+#include "update/models/whatsnew.hpp"
+#endif
+
 #if !defined(_WIN32) && defined(WHATSNEW_ENABLED)
 #include "update/shared-update.hpp"
 #endif
@@ -96,8 +100,6 @@
 #include "ui_ColorSelect.h"
 
 #include <QWindow>
-
-#include "update/models/whatsnew.hpp"
 
 #ifdef ENABLE_WAYLAND
 #include <obs-nix-platform.h>
@@ -3395,28 +3397,9 @@ void OBSBasic::SourceToolBarActionsSetEnabled()
 	RefreshToolBarStyling(ui->sourcesToolbar);
 }
 
-void OBSBasic::UpdateTransformShortcuts()
-{
-	bool hasVideo = false;
-
-	OBSSource source = obs_sceneitem_get_source(GetCurrentSceneItem());
-
-	if (source) {
-		uint32_t flags = obs_source_get_output_flags(source);
-		hasVideo = (flags & OBS_SOURCE_VIDEO) != 0;
-	}
-
-	ui->actionEditTransform->setEnabled(hasVideo);
-	ui->actionCopyTransform->setEnabled(hasVideo);
-	ui->actionPasteTransform->setEnabled(hasVideo ? hasCopiedTransform
-						      : false);
-	ui->actionResetTransform->setEnabled(hasVideo);
-}
-
 void OBSBasic::UpdateContextBar(bool force)
 {
 	SourceToolBarActionsSetEnabled();
-	UpdateTransformShortcuts();
 
 	if (!ui->contextContainer->isVisible() && !force)
 		return;
@@ -4776,30 +4759,16 @@ int OBSBasic::ResetVideo()
 	}
 
 	ret = AttemptToResetVideo(&ovi);
-	if (IS_WIN32 && ret != OBS_VIDEO_SUCCESS) {
-		if (ret == OBS_VIDEO_CURRENTLY_ACTIVE) {
-			blog(LOG_WARNING, "Tried to reset when "
-					  "already active");
-			return ret;
-		}
-
-		/* Try OpenGL if DirectX fails on windows */
-		if (astrcmpi(ovi.graphics_module, DL_OPENGL) != 0) {
-			blog(LOG_WARNING,
-			     "Failed to initialize obs video (%d) "
-			     "with graphics_module='%s', retrying "
-			     "with graphics_module='%s'",
-			     ret, ovi.graphics_module, DL_OPENGL);
-			ovi.graphics_module = DL_OPENGL;
-			ret = AttemptToResetVideo(&ovi);
-		}
-	} else if (ret == OBS_VIDEO_SUCCESS) {
-		ResizePreview(ovi.base_width, ovi.base_height);
-		if (program)
-			ResizeProgram(ovi.base_width, ovi.base_height);
+	if (ret == OBS_VIDEO_CURRENTLY_ACTIVE) {
+		blog(LOG_WARNING, "Tried to reset when already active");
+		return ret;
 	}
 
 	if (ret == OBS_VIDEO_SUCCESS) {
+		ResizePreview(ovi.base_width, ovi.base_height);
+		if (program)
+			ResizeProgram(ovi.base_width, ovi.base_height);
+
 		const float sdr_white_level = (float)config_get_uint(
 			basicConfig, "Video", "SdrWhiteLevel");
 		const float hdr_nominal_peak_level = (float)config_get_uint(
@@ -5128,6 +5097,16 @@ void OBSBasic::closeEvent(QCloseEvent *event)
 
 	closing = true;
 
+	/* While closing, a resize event to OBSQTDisplay could be triggered.
+	 * The graphics thread on macOS dispatches a lambda function to be
+	 * executed asynchronously in the main thread. However, the display is
+	 * sometimes deleted before the lambda function is actually executed.
+	 * To avoid such a case, destroy displays earlier than others such as
+	 * deleting browser docks. */
+	ui->preview->DestroyDisplay();
+	if (program)
+		program->DestroyDisplay();
+
 	if (outputHandler->VirtualCamActive())
 		outputHandler->StopVirtualCam();
 
@@ -5153,10 +5132,6 @@ void OBSBasic::closeEvent(QCloseEvent *event)
 	auth.reset();
 
 	delete extraBrowsers;
-
-	ui->preview->DestroyDisplay();
-	if (program)
-		program->DestroyDisplay();
 
 	config_set_string(App()->GlobalConfig(), "BasicWindow", "DockState",
 			  saveState().toBase64().constData());
@@ -8535,10 +8510,10 @@ void OBSBasic::DeleteYouTubeAppDock()
 void OBSBasic::UpdateEditMenu()
 {
 	QModelIndexList items = GetAllSelectedSourceItems();
-	int count = items.count();
+	int totalCount = items.count();
 	size_t filter_count = 0;
 
-	if (count == 1) {
+	if (totalCount == 1) {
 		OBSSceneItem sceneItem =
 			ui->sources->Get(GetTopSelectedSourceItem());
 		OBSSource source = obs_sceneitem_get_source(sceneItem);
@@ -8561,39 +8536,48 @@ void OBSBasic::UpdateEditMenu()
 			allowPastingDuplicate = false;
 	}
 
-	ui->actionCopySource->setEnabled(count > 0);
-	ui->actionEditTransform->setEnabled(count == 1);
-	ui->actionCopyTransform->setEnabled(count == 1);
-	ui->actionPasteTransform->setEnabled(hasCopiedTransform && count > 0);
+	int videoCount = 0;
+	bool canTransformMultiple = false;
+	for (int i = 0; i < totalCount; i++) {
+		OBSSceneItem item = ui->sources->Get(items.value(i).row());
+		OBSSource source = obs_sceneitem_get_source(item);
+		const uint32_t flags = obs_source_get_output_flags(source);
+		const bool hasVideo = (flags & OBS_SOURCE_VIDEO) != 0;
+		if (hasVideo && !obs_sceneitem_locked(item))
+			canTransformMultiple = true;
+
+		if (hasVideo)
+			videoCount++;
+	}
+	const bool canTransformSingle = videoCount == 1 && totalCount == 1;
+
+	ui->actionCopySource->setEnabled(totalCount > 0);
+	ui->actionEditTransform->setEnabled(canTransformSingle);
+	ui->actionCopyTransform->setEnabled(canTransformSingle);
+	ui->actionPasteTransform->setEnabled(hasCopiedTransform &&
+					     videoCount > 0);
 	ui->actionCopyFilters->setEnabled(filter_count > 0);
 	ui->actionPasteFilters->setEnabled(
-		!obs_weak_source_expired(copyFiltersSource) && count > 0);
+		!obs_weak_source_expired(copyFiltersSource) && totalCount > 0);
 	ui->actionPasteRef->setEnabled(!!clipboard.size());
 	ui->actionPasteDup->setEnabled(allowPastingDuplicate);
 
-	ui->actionMoveUp->setEnabled(count > 0);
-	ui->actionMoveDown->setEnabled(count > 0);
-	ui->actionMoveToTop->setEnabled(count > 0);
-	ui->actionMoveToBottom->setEnabled(count > 0);
+	ui->actionMoveUp->setEnabled(totalCount > 0);
+	ui->actionMoveDown->setEnabled(totalCount > 0);
+	ui->actionMoveToTop->setEnabled(totalCount > 0);
+	ui->actionMoveToBottom->setEnabled(totalCount > 0);
 
-	bool canTransform = false;
-	for (int i = 0; i < count; i++) {
-		OBSSceneItem item = ui->sources->Get(items.value(i).row());
-		if (!obs_sceneitem_locked(item))
-			canTransform = true;
-	}
-
-	ui->actionResetTransform->setEnabled(canTransform);
-	ui->actionRotate90CW->setEnabled(canTransform);
-	ui->actionRotate90CCW->setEnabled(canTransform);
-	ui->actionRotate180->setEnabled(canTransform);
-	ui->actionFlipHorizontal->setEnabled(canTransform);
-	ui->actionFlipVertical->setEnabled(canTransform);
-	ui->actionFitToScreen->setEnabled(canTransform);
-	ui->actionStretchToScreen->setEnabled(canTransform);
-	ui->actionCenterToScreen->setEnabled(canTransform);
-	ui->actionVerticalCenter->setEnabled(canTransform);
-	ui->actionHorizontalCenter->setEnabled(canTransform);
+	ui->actionResetTransform->setEnabled(canTransformMultiple);
+	ui->actionRotate90CW->setEnabled(canTransformMultiple);
+	ui->actionRotate90CCW->setEnabled(canTransformMultiple);
+	ui->actionRotate180->setEnabled(canTransformMultiple);
+	ui->actionFlipHorizontal->setEnabled(canTransformMultiple);
+	ui->actionFlipVertical->setEnabled(canTransformMultiple);
+	ui->actionFitToScreen->setEnabled(canTransformMultiple);
+	ui->actionStretchToScreen->setEnabled(canTransformMultiple);
+	ui->actionCenterToScreen->setEnabled(canTransformMultiple);
+	ui->actionVerticalCenter->setEnabled(canTransformMultiple);
+	ui->actionHorizontalCenter->setEnabled(canTransformMultiple);
 }
 
 void OBSBasic::on_actionEditTransform_triggered()
