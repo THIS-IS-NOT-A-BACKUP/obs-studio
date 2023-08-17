@@ -195,9 +195,7 @@ mfxStatus QSV_Encoder_Internal::Open(qsv_param_t *pParams, enum qsv_codec codec)
 
 	m_pmfxENC = new MFXVideoENCODE(m_session);
 
-	sts = InitParams(pParams, codec);
-	MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
-
+	InitParams(pParams, codec);
 	sts = m_pmfxENC->Query(&m_mfxEncParams, &m_mfxEncParams);
 	MSDK_IGNORE_MFX_STS(sts, MFX_WRN_INCOMPATIBLE_VIDEO_PARAM);
 	MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
@@ -260,7 +258,7 @@ mfxStatus QSV_Encoder_Internal::InitParams(qsv_param_t *pParams,
 
 	mfxPlatform platform;
 	MFXVideoCORE_QueryPlatform(m_session, &platform);
-#if defined(_WIN32)
+
 	PRAGMA_WARN_PUSH
 	PRAGMA_WARN_DEPRECATION
 	if (codec == QSV_CODEC_AVC || codec == QSV_CODEC_HEVC) {
@@ -270,7 +268,6 @@ mfxStatus QSV_Encoder_Internal::InitParams(qsv_param_t *pParams,
 		m_mfxEncParams.mfx.LowPower = MFX_CODINGOPTION_ON;
 	}
 	PRAGMA_WARN_POP
-#endif
 
 	m_mfxEncParams.mfx.RateControlMethod = pParams->nRateControl;
 

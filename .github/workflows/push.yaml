@@ -13,7 +13,7 @@ permissions:
   contents: write
 concurrency:
   group: '${{ github.workflow }} @ ${{ github.ref }}'
-  cancel-in-progress: ${{ fromJSON(github.ref_type == 'tag') }}
+  cancel-in-progress: false
 jobs:
   check-format:
     name: Format 🔍
@@ -113,7 +113,7 @@ jobs:
           fetch-depth: 0
 
       - name: Check for Changed Files ✅
-        if: github.ref_name != 'tag'
+        if: github.ref_type != 'tag'
         uses: ./.github/actions/check-changes
         id: checks
         with:
