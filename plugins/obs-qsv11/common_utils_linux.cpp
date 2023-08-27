@@ -5,8 +5,6 @@
 #include <util/c99defs.h>
 #include <util/dstr.h>
 #include <va/va_drm.h>
-#include <va/va_x11.h>
-#include <va/va_wayland.h>
 #include <va/va_str.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,6 +15,13 @@
 
 #include <obs.h>
 #include <obs-nix-platform.h>
+
+// Set during check_adapters to work-around VPL dispatcher not setting a VADisplay
+// for the MSDK runtime.
+static const char *default_h264_device = nullptr;
+static const char *default_hevc_device = nullptr;
+static const char *default_av1_device = nullptr;
+static int default_fd = -1;
 
 mfxStatus simple_alloc(mfxHDL pthis, mfxFrameAllocRequest *request,
 		       mfxFrameAllocResponse *response)
@@ -77,7 +82,8 @@ void ClearRGBSurfaceVMem(mfxMemId memId);
 // Initialize Intel VPL Session, device/display and memory manager
 mfxStatus Initialize(mfxVersion ver, mfxSession *pSession,
 		     mfxFrameAllocator *pmfxAllocator, mfxHDL *deviceHandle,
-		     bool bCreateSharedHandles, bool dx9hack)
+		     bool bCreateSharedHandles, bool dx9hack,
+		     enum qsv_codec codec)
 {
 	UNUSED_PARAMETER(ver);
 	UNUSED_PARAMETER(pmfxAllocator);
@@ -107,23 +113,40 @@ mfxStatus Initialize(mfxVersion ver, mfxSession *pSession,
 		cfg, (const mfxU8 *)"mfxImplDescription.AccelerationMode",
 		impl);
 
-	mfxHDL vaDisplay = nullptr;
-	if (obs_get_nix_platform() == OBS_NIX_PLATFORM_X11_EGL) {
-		vaDisplay =
-			vaGetDisplay((Display *)obs_get_nix_platform_display());
-	} else if (obs_get_nix_platform() == OBS_NIX_PLATFORM_WAYLAND) {
-		vaDisplay = vaGetDisplayWl(
-			(wl_display *)obs_get_nix_platform_display());
+	if (codec == QSV_CODEC_AVC && default_h264_device)
+		default_fd = open(default_h264_device, O_RDWR);
+	if (codec == QSV_CODEC_HEVC && default_hevc_device)
+		default_fd = open(default_hevc_device, O_RDWR);
+	if (codec == QSV_CODEC_AV1 && default_av1_device)
+		default_fd = open(default_av1_device, O_RDWR);
+	if (default_fd < 0) {
+		blog(LOG_ERROR, "Failed to open device '%s'",
+		     default_h264_device);
+		return MFX_ERR_DEVICE_FAILED;
+	}
+
+	mfxHDL vaDisplay = vaGetDisplayDRM(default_fd);
+	if (!vaDisplay) {
+		return MFX_ERR_DEVICE_FAILED;
 	}
 
 	sts = MFXCreateSession(loader, 0, pSession);
-	MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+	if (MFX_ERR_NONE > sts) {
+		blog(LOG_ERROR, "Failed to initialize MFX");
+		MSDK_PRINT_RET_MSG(sts);
+		close(default_fd);
+		default_fd = -1;
+		return sts;
+	}
 
 	// VPL expects the VADisplay to be initialized.
 	int major;
 	int minor;
 	if (vaInitialize(vaDisplay, &major, &minor) != VA_STATUS_SUCCESS) {
+		blog(LOG_ERROR, "Failed to initialize VA-API");
 		vaTerminate(vaDisplay);
+		close(default_fd);
+		default_fd = -1;
 		return MFX_ERR_DEVICE_FAILED;
 	}
 	sts = MFXVideoCORE_SetHandle(*pSession, MFX_HANDLE_VA_DISPLAY,
@@ -134,7 +157,13 @@ mfxStatus Initialize(mfxVersion ver, mfxSession *pSession,
 }
 
 // Release resources (device/display)
-void Release(){};
+void Release()
+{
+	if (default_fd > 0)
+		close(default_fd);
+
+	default_fd = -1;
+}
 
 void mfxGetTime(mfxTime *timestamp)
 {
@@ -162,7 +191,7 @@ struct vaapi_device {
 	const char *driver;
 };
 
-void vaapi_open(char *device_path, struct vaapi_device *device)
+static void vaapi_open(char *device_path, struct vaapi_device *device)
 {
 	int fd = open(device_path, O_RDWR);
 	if (fd < 0) {
@@ -201,7 +230,7 @@ void vaapi_open(char *device_path, struct vaapi_device *device)
 	device->driver = driver;
 }
 
-void vaapi_close(struct vaapi_device *device)
+static void vaapi_close(struct vaapi_device *device)
 {
 	vaTerminate(device->display);
 	close(device->fd);
@@ -231,7 +260,7 @@ static uint32_t vaapi_check_support(VADisplay display, VAProfile profile,
 	return (rc & VA_RC_CBR || rc & VA_RC_CQP || rc & VA_RC_VBR);
 }
 
-bool vaapi_supports_h264(VADisplay display)
+static bool vaapi_supports_h264(VADisplay display)
 {
 	bool ret = false;
 	ret |= vaapi_check_support(display, VAProfileH264ConstrainedBaseline,
@@ -254,7 +283,7 @@ bool vaapi_supports_h264(VADisplay display)
 	return ret;
 }
 
-bool vaapi_supports_av1(VADisplay display)
+static bool vaapi_supports_av1(VADisplay display)
 {
 	bool ret = false;
 	// Are there any devices with non-LowPower entrypoints?
@@ -265,7 +294,7 @@ bool vaapi_supports_av1(VADisplay display)
 	return ret;
 }
 
-bool vaapi_supports_hevc(VADisplay display)
+static bool vaapi_supports_hevc(VADisplay display)
 {
 	bool ret = false;
 	ret |= vaapi_check_support(display, VAProfileHEVCMain,
@@ -315,6 +344,18 @@ void check_adapters(struct adapter_info *adapters, size_t *adapter_count)
 				vaapi_supports_av1(device.display);
 			adapter->supports_hevc =
 				vaapi_supports_hevc(device.display);
+
+			if (adapter->is_intel && default_h264_device == nullptr)
+				default_h264_device = strdup(full_path.array);
+
+			if (adapter->supports_av1 &&
+			    default_av1_device == nullptr)
+				default_av1_device = strdup(full_path.array);
+
+			if (adapter->supports_hevc &&
+			    default_hevc_device == nullptr)
+				default_hevc_device = strdup(full_path.array);
+
 			vaapi_close(&device);
 
 		next_entry:
