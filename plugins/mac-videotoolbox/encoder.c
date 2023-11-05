@@ -588,18 +588,6 @@ static bool create_encoder(struct vt_encoder *enc)
 
 	if (enc->codec_type == kCMVideoCodecType_H264 ||
 	    enc->codec_type == kCMVideoCodecType_HEVC) {
-		/* Apple's documentation states that a keyframe interval of 0 will result in
-		 * the encoder automatically picking times to insert them; However, Apple's
-		 * encoder, when in CRF mode, will never actually insert any keyframes past
-		 * the very first one, rendering the files near-unusable in editors or
-		 * video players. So to avoid that happening, enforce a reasonable default
-		 * of 10 seconds in CRF mode. */
-		if (enc->keyint == 0 && strcmp(enc->rate_control, "CRF") == 0) {
-			VT_BLOG(LOG_INFO,
-				"Enforcing non-zero keyframe interval in CRF mode");
-			enc->keyint = 10;
-		}
-
 		// This can fail when using GPU hardware encoding
 		code = session_set_prop_int(
 			s,
@@ -1540,7 +1528,7 @@ static void vt_defaults(obs_data_t *settings, void *data)
 	obs_data_set_default_bool(settings, "limit_bitrate", false);
 	obs_data_set_default_int(settings, "max_bitrate", 2500);
 	obs_data_set_default_double(settings, "max_bitrate_window", 1.5f);
-	obs_data_set_default_int(settings, "keyint_sec", 0);
+	obs_data_set_default_int(settings, "keyint_sec", 2);
 	obs_data_set_default_string(
 		settings, "profile",
 		type_data->codec_type == kCMVideoCodecType_H264 ? "high"
