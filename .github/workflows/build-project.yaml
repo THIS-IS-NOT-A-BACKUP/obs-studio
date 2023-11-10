@@ -286,8 +286,15 @@ jobs:
 
           echo "cacheKey=${cache_key}" >> $GITHUB_OUTPUT
 
+      - name: Validate Flatpak manifest
+        uses: ./.github/actions/flatpak-builder-lint
+        with:
+          artifact: manifest
+          path: build-aux/com.obsproject.Studio.json
+          validateToPublish: false
+
       - name: Build Flatpak Manifest 🧾
-        uses: flatpak/flatpak-github-actions/flatpak-builder@1283416d7c0462e052ab0685d9444a7a48bfff3b
+        uses: flatpak/flatpak-github-actions/flatpak-builder@0ab9dd6a6afa6fe7e292db0325171660bf5b6fdf
         with:
           build-bundle: ${{ fromJSON(needs.check-event.outputs.package) }}
           bundle: obs-studio-flatpak-${{ needs.check-event.outputs.commitHash }}.flatpak
@@ -295,6 +302,20 @@ jobs:
           cache: ${{ fromJSON(steps.setup.outputs.cacheHit) || (github.event_name == 'push' && github.ref_name == 'master')}}
           restore-cache: ${{ fromJSON(steps.setup.outputs.cacheHit) }}
           cache-key: ${{ steps.setup.outputs.cacheKey }}
+
+      - name: Validate build directory
+        uses: ./.github/actions/flatpak-builder-lint
+        with:
+          artifact: builddir
+          path: flatpak_app
+          validateToPublish: false
+
+      - name: Validate repository
+        uses: ./.github/actions/flatpak-builder-lint
+        with:
+          artifact: repo
+          path: repo
+          validateToPublish: false
 
   windows-build:
     name: Windows 🪟
