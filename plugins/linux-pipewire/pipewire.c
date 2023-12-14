@@ -1222,10 +1222,9 @@ void obs_pipewire_destroy(obs_pipewire *obs_pw)
 	bfree(obs_pw);
 }
 
-obs_pipewire_stream *
-obs_pipewire_connect_stream(obs_pipewire *obs_pw, obs_source_t *source,
-			    int pipewire_node, const char *stream_name,
-			    struct pw_properties *stream_properties)
+obs_pipewire_stream *obs_pipewire_connect_stream(
+	obs_pipewire *obs_pw, obs_source_t *source, int pipewire_node,
+	const struct obs_pipwire_connect_stream_info *connect_info)
 {
 	struct spa_pod_builder pod_builder;
 	const struct spa_pod **params = NULL;
@@ -1233,9 +1232,12 @@ obs_pipewire_connect_stream(obs_pipewire *obs_pw, obs_source_t *source,
 	uint32_t n_params;
 	uint8_t params_buffer[4096];
 
+	assert(connect_info != NULL);
+
 	obs_pw_stream = bzalloc(sizeof(obs_pipewire_stream));
 	obs_pw_stream->obs_pw = obs_pw;
 	obs_pw_stream->source = source;
+	obs_pw_stream->cursor.visible = connect_info->screencast.cursor_visible;
 
 	init_format_info(obs_pw_stream);
 
@@ -1248,8 +1250,9 @@ obs_pipewire_connect_stream(obs_pipewire *obs_pw, obs_source_t *source,
 	blog(LOG_DEBUG, "[pipewire] registered event %p", obs_pw_stream->reneg);
 
 	/* Stream */
-	obs_pw_stream->stream =
-		pw_stream_new(obs_pw->core, stream_name, stream_properties);
+	obs_pw_stream->stream = pw_stream_new(obs_pw->core,
+					      connect_info->stream_name,
+					      connect_info->stream_properties);
 	pw_stream_add_listener(obs_pw_stream->stream,
 			       &obs_pw_stream->stream_listener, &stream_events,
 			       obs_pw_stream);
