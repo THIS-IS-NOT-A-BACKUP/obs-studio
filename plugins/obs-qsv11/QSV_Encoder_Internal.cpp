@@ -71,7 +71,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 mfxHDL QSV_Encoder_Internal::g_DX_Handle = NULL;
 mfxU16 QSV_Encoder_Internal::g_numEncodersOpen = 0;
 
-QSV_Encoder_Internal::QSV_Encoder_Internal(mfxVersion &version, bool isDGPU)
+QSV_Encoder_Internal::QSV_Encoder_Internal(mfxVersion &version)
 	: m_pmfxSurfaces(NULL),
 	  m_pmfxENC(NULL),
 	  m_nSPSBufferSize(1024),
@@ -81,8 +81,8 @@ QSV_Encoder_Internal::QSV_Encoder_Internal(mfxVersion &version, bool isDGPU)
 	  m_nTaskIdx(0),
 	  m_nFirstSyncTask(0),
 	  m_outBitstream(),
-	  m_isDGPU(isDGPU),
-	  m_sessionData(NULL)
+	  m_sessionData(NULL),
+	  m_ver(version)
 {
 	mfxVariant tempImpl;
 	mfxStatus sts;
@@ -276,10 +276,6 @@ mfxStatus QSV_Encoder_Internal::InitParams(qsv_param_t *pParams,
 	else
 		m_co2.RepeatPPS = MFX_CODINGOPTION_OFF;
 
-	memset(&m_co3, 0, sizeof(mfxExtCodingOption3));
-	m_co3.Header.BufferId = MFX_EXTBUFF_CODING_OPTION3;
-	m_co3.Header.BufferSz = sizeof(m_co3);
-
 	if (pParams->nbFrames > 1)
 		m_co2.BRefType = MFX_B_REF_PYRAMID;
 
@@ -307,16 +303,9 @@ mfxStatus QSV_Encoder_Internal::InitParams(qsv_param_t *pParams,
 		    m_mfxEncParams.mfx.LowPower == MFX_CODINGOPTION_ON) {
 			m_co2.LookAheadDepth = pParams->nLADEPTH;
 		}
-		// CQM to follow UI setting
-		if (pParams->bCQM && !pParams->bRepeatHeaders) {
-			m_co3.AdaptiveCQM = MFX_CODINGOPTION_ON;
-		} else {
-			m_co3.AdaptiveCQM = MFX_CODINGOPTION_OFF;
-		}
 	}
 
 	extendedBuffers.push_back((mfxExtBuffer *)&m_co2);
-	extendedBuffers.push_back((mfxExtBuffer *)&m_co3);
 
 	if (codec == QSV_CODEC_HEVC) {
 		if ((pParams->nWidth & 15) || (pParams->nHeight & 15)) {
