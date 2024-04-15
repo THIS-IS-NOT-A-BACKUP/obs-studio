@@ -123,7 +123,13 @@ static inline double encoder_video_codec(obs_encoder_t *encoder)
 	return 0.0;
 }
 
-#define FLV_INFO_SIZE_OFFSET 42
+/*
+ * This is based on the position of `duration` and `fileSize` in
+ * `build_flv_meta_data` relative to the beginning of the file
+ * to allow `write_file_info` to overwrite these two fields once
+ * the file is finalized.
+ */
+#define FLV_INFO_SIZE_OFFSET 58
 
 void write_file_info(FILE *file, int64_t duration_ms, int64_t size)
 {
@@ -208,6 +214,26 @@ static void build_flv_meta_data(obs_output_t *context, uint8_t **output,
 	*output = bmemdup(buf, *size);
 }
 
+static inline void write_previous_tag_size_without_header(struct serializer *s,
+							  uint32_t header_size)
+{
+	assert(serializer_get_pos(s) >= header_size);
+	assert(serializer_get_pos(s) >= 11);
+
+	/*
+	 * From FLV file format specification version 10:
+	 * Size of previous [current] tag, including its header.
+	 * For FLV version 1 this value is 11 plus the DataSize of
+	 * the previous [current] tag.
+	 */
+	s_wb32(s, (uint32_t)serializer_get_pos(s) - header_size);
+}
+
+static inline void write_previous_tag_size(struct serializer *s)
+{
+	write_previous_tag_size_without_header(s, 0);
+}
+
 void flv_meta_data(obs_output_t *context, uint8_t **output, size_t *size,
 		   bool write_header)
 {
@@ -238,7 +264,7 @@ void flv_meta_data(obs_output_t *context, uint8_t **output, size_t *size,
 
 	s_write(&s, meta_data, meta_data_size);
 
-	s_wb32(&s, (uint32_t)serializer_get_pos(&s) - start_pos - 1);
+	write_previous_tag_size_without_header(&s, start_pos);
 
 	*output = data.bytes.array;
 	*size = data.bytes.num;
@@ -281,8 +307,7 @@ static void flv_video(struct serializer *s, int32_t dts_offset,
 	s_wb24(s, get_ms_time(packet, offset));
 	s_write(s, packet->data, packet->size);
 
-	/* write tag size (starting byte doesn't count) */
-	s_wb32(s, (uint32_t)serializer_get_pos(s) - 1);
+	write_previous_tag_size(s);
 }
 
 static void flv_audio(struct serializer *s, int32_t dts_offset,
@@ -314,8 +339,7 @@ static void flv_audio(struct serializer *s, int32_t dts_offset,
 	s_w8(s, is_header ? 0 : 1);
 	s_write(s, packet->data, packet->size);
 
-	/* write tag size (starting byte doesn't count) */
-	s_wb32(s, (uint32_t)serializer_get_pos(s) - 1);
+	write_previous_tag_size(s);
 }
 
 void flv_packet_mux(struct encoder_packet *packet, int32_t dts_offset,
@@ -376,7 +400,7 @@ void flv_packet_ex(struct encoder_packet *packet, enum video_id_t codec_id,
 	s_write(&s, packet->data, packet->size);
 
 	// packet tail
-	s_wb32(&s, (uint32_t)serializer_get_pos(&s) - 1);
+	write_previous_tag_size(&s);
 
 	*output = data.bytes.array;
 	*size = data.bytes.num;
@@ -489,7 +513,7 @@ void flv_packet_metadata(enum video_id_t codec_id, uint8_t **output,
 	array_output_serializer_free(&metadata); // must be freed
 
 	// packet tail
-	s_wb32(&s, (uint32_t)serializer_get_pos(&s) - 1);
+	write_previous_tag_size(&s);
 
 	*output = data.bytes.array;
 	*size = data.bytes.num;
@@ -621,7 +645,7 @@ void flv_additional_meta_data(obs_output_t *context, uint8_t **data,
 	s_write(&s, meta_data, meta_data_size);
 	bfree(meta_data);
 
-	s_wb32(&s, (uint32_t)serializer_get_pos(&s) - 1);
+	write_previous_tag_size(&s);
 
 	*data = out.bytes.array;
 	*size = out.bytes.num;
@@ -720,7 +744,7 @@ static void flv_additional_audio(struct serializer *s, int32_t dts_offset,
 	serialize(s, data, size);
 	bfree(data);
 
-	s_wb32(s, (uint32_t)serializer_get_pos(s) - 1);
+	write_previous_tag_size(s);
 }
 
 void flv_additional_packet_mux(struct encoder_packet *packet,
