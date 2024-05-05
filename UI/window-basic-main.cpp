@@ -1453,10 +1453,11 @@ static const double scaled_vals[] = {1.0,         1.25, (1.0 / 0.75), 1.5,
 				     2.5,         2.75, 3.0,          0.0};
 
 extern void CheckExistingCookieId();
-#if OBS_RELEASE_CANDIDATE == 0 && OBS_BETA == 0
-#define DEFAULT_CONTAINER "mkv"
-#elif defined(__APPLE__)
+
+#ifdef __APPLE__
 #define DEFAULT_CONTAINER "fragmented_mov"
+#elif OBS_RELEASE_CANDIDATE == 0 && OBS_BETA == 0
+#define DEFAULT_CONTAINER "mkv"
 #else
 #define DEFAULT_CONTAINER "fragmented_mp4"
 #endif
@@ -10719,6 +10720,8 @@ void OBSBasic::PauseRecording()
 	obs_output_t *output = outputHandler->fileOutput;
 
 	if (obs_output_pause(output, true)) {
+		os_atomic_set_bool(&recording_paused, true);
+
 		pause->setAccessibleName(QTStr("Basic.Main.UnpauseRecording"));
 		pause->setToolTip(QTStr("Basic.Main.UnpauseRecording"));
 		pause->blockSignals(true);
@@ -10740,8 +10743,6 @@ void OBSBasic::PauseRecording()
 			trayIcon->setIcon(QIcon::fromTheme("obs-tray-paused",
 							   trayIconFile));
 		}
-
-		os_atomic_set_bool(&recording_paused, true);
 
 		auto replay = replayBufferButton ? replayBufferButton->second()
 						 : nullptr;
@@ -10765,6 +10766,8 @@ void OBSBasic::UnpauseRecording()
 	obs_output_t *output = outputHandler->fileOutput;
 
 	if (obs_output_pause(output, false)) {
+		os_atomic_set_bool(&recording_paused, false);
+
 		pause->setAccessibleName(QTStr("Basic.Main.PauseRecording"));
 		pause->setToolTip(QTStr("Basic.Main.PauseRecording"));
 		pause->blockSignals(true);
@@ -10786,8 +10789,6 @@ void OBSBasic::UnpauseRecording()
 			trayIcon->setIcon(QIcon::fromTheme("obs-tray-active",
 							   trayIconFile));
 		}
-
-		os_atomic_set_bool(&recording_paused, false);
 
 		auto replay = replayBufferButton ? replayBufferButton->second()
 						 : nullptr;
