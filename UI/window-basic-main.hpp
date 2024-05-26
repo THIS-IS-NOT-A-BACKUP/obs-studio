@@ -803,15 +803,15 @@ private slots:
 
 	void on_actionCopyFilters_triggered();
 	void on_actionPasteFilters_triggered();
+	void AudioMixerCopyFilters();
+	void AudioMixerPasteFilters();
+	void SourcePasteFilters(OBSSource source, OBSSource dstSource);
 
 	void ColorChange();
 
 	SourceTreeItem *GetItemWidgetFromSceneItem(obs_sceneitem_t *sceneItem);
 
 	void on_actionShowAbout_triggered();
-
-	void AudioMixerCopyFilters();
-	void AudioMixerPasteFilters();
 
 	void EnablePreview();
 	void DisablePreview();
@@ -848,7 +848,6 @@ private slots:
 	void TBarReleased();
 
 	void LockVolumeControl(bool lock);
-	void ThemeChanged();
 
 	void UpdateVirtualCamConfig(const VCamConfig &config);
 	void RestartVirtualCam(const VCamConfig &config);
