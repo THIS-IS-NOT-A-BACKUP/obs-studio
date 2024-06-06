@@ -101,6 +101,7 @@ target_sources(
           forms/OBSAbout.ui
           forms/OBSAdvAudio.ui
           forms/OBSBasic.ui
+          forms/OBSBasicControls.ui
           forms/OBSBasicFilters.ui
           forms/OBSBasicInteraction.ui
           forms/OBSBasicProperties.ui
@@ -167,6 +168,8 @@ target_sources(
           audio-encoders.cpp
           audio-encoders.hpp
           balance-slider.hpp
+          basic-controls.cpp
+          basic-controls.hpp
           clickable-label.hpp
           double-slider.cpp
           double-slider.hpp
@@ -189,13 +192,12 @@ target_sources(
           menu-button.cpp
           menu-button.hpp
           mute-checkbox.hpp
+          noncheckable-button.hpp
           plain-text-edit.cpp
           plain-text-edit.hpp
           properties-view.cpp
           properties-view.hpp
           properties-view.moc.hpp
-          record-button.cpp
-          record-button.hpp
           remote-text.cpp
           remote-text.hpp
           scene-tree.cpp
@@ -502,16 +504,22 @@ elseif(OS_POSIX)
     target_compile_options(obs PRIVATE -Wno-unqualified-std-cast-call)
   endif()
 
-  if(OS_LINUX AND ENABLE_WHATSNEW)
-    find_package(MbedTLS)
-    find_package(nlohmann_json REQUIRED)
-    if(NOT MBEDTLS_FOUND)
-      obs_status(FATAL_ERROR "mbedTLS not found, but required for WhatsNew support on Linux")
+  if(OS_LINUX)
+    if(USE_XDG)
+      target_compile_definitions(obs PRIVATE USE_XDG)
     endif()
 
-    target_sources(obs PRIVATE update/crypto-helpers.hpp update/crypto-helpers-mbedtls.cpp update/shared-update.cpp
-                               update/shared-update.hpp update/update-helpers.cpp update/update-helpers.hpp)
-    target_link_libraries(obs PRIVATE Mbedtls::Mbedtls nlohmann_json::nlohmann_json OBS::blake2)
+    if(ENABLE_WHATSNEW)
+      find_package(MbedTLS)
+      find_package(nlohmann_json REQUIRED)
+      if(NOT MBEDTLS_FOUND)
+        obs_status(FATAL_ERROR "mbedTLS not found, but required for WhatsNew support on Linux")
+      endif()
+
+      target_sources(obs PRIVATE update/crypto-helpers.hpp update/crypto-helpers-mbedtls.cpp update/shared-update.cpp
+                                 update/shared-update.hpp update/update-helpers.cpp update/update-helpers.hpp)
+      target_link_libraries(obs PRIVATE Mbedtls::Mbedtls nlohmann_json::nlohmann_json OBS::blake2)
+    endif()
   endif()
 endif()
 
