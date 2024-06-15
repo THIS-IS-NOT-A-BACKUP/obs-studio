@@ -127,7 +127,7 @@ create_service(const GoLiveApi::Config &go_live_config,
 
 	if (!go_live_config.meta.config_id.empty()) {
 		parsed_query.addQueryItem(
-			"obsConfigId",
+			"clientConfigId",
 			QString::fromStdString(go_live_config.meta.config_id));
 	}
 
@@ -777,8 +777,10 @@ create_audio_encoders(const GoLiveApi::Config &go_live_config,
 	if (!vod_track_mixer.has_value())
 		return;
 
+	// we already check for empty inside of `create_encoders`
+	encoder_configs_type empty = {};
 	create_encoders("multitrack video vod audio",
-			go_live_config.audio_configurations.vod,
+			go_live_config.audio_configurations.vod.value_or(empty),
 			*vod_track_mixer);
 
 	return;

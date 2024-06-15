@@ -191,11 +191,12 @@ struct Preferences {
 	media_frames_per_second framerate;
 	uint32_t canvas_width;
 	uint32_t canvas_height;
+	optional<uint32_t> composition_gpu_index;
 
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(Preferences, maximum_aggregate_bitrate,
 				       maximum_video_tracks, vod_track_audio,
 				       width, height, framerate, canvas_width,
-				       canvas_height)
+				       canvas_height, composition_gpu_index)
 };
 
 struct PostData {
@@ -279,7 +280,7 @@ struct AudioEncoderConfiguration {
 
 struct AudioConfigurations {
 	std::vector<AudioEncoderConfiguration> live;
-	std::vector<AudioEncoderConfiguration> vod;
+	optional<std::vector<AudioEncoderConfiguration>> vod;
 
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE_WITH_DEFAULT(AudioConfigurations, live,
 						    vod)
