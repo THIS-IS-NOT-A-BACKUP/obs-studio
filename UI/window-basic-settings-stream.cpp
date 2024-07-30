@@ -1,12 +1,12 @@
 #include <QMessageBox>
 #include <QUrl>
 #include <QUuid>
+#include <qt-wrappers.hpp>
 
 #include "window-basic-settings.hpp"
 #include "obs-frontend-api.h"
 #include "obs-app.hpp"
 #include "window-basic-main.hpp"
-#include "qt-wrappers.hpp"
 #include "url-push-button.hpp"
 
 #ifdef BROWSER_AVAILABLE
@@ -745,9 +745,6 @@ QString OBSBasicSettings::FindProtocol()
 		if (obs_is_output_protocol_registered("RTMPS") &&
 		    server.startsWith("rtmps://"))
 			return QString("RTMPS");
-
-		if (server.startsWith("ftl://"))
-			return QString("FTL");
 
 		if (server.startsWith("srt://"))
 			return QString("SRT");

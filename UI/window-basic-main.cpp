@@ -36,6 +36,7 @@
 #include <QScrollBar>
 #include <QTextStream>
 #include <QActionGroup>
+#include <qt-wrappers.hpp>
 
 #include <util/dstr.h>
 #include <util/util.hpp>
@@ -67,7 +68,6 @@
 #include "window-youtube-actions.hpp"
 #include "youtube-api-wrappers.hpp"
 #endif
-#include "qt-wrappers.hpp"
 #include "context-bar-controls.hpp"
 #include "obs-proxy-style.hpp"
 #include "display-helpers.hpp"
@@ -1499,9 +1499,8 @@ bool OBSBasic::LoadService()
 	if (!service)
 		return false;
 
-	/* Enforce Opus on FTL if needed */
-	if (strcmp(obs_service_get_protocol(service), "FTL") == 0 ||
-	    strcmp(obs_service_get_protocol(service), "WHIP") == 0) {
+	/* Enforce Opus on WHIP if needed */
+	if (strcmp(obs_service_get_protocol(service), "WHIP") == 0) {
 		const char *option = config_get_string(
 			basicConfig, "SimpleOutput", "StreamAudioEncoder");
 		if (strcmp(option, "opus") != 0)
@@ -1869,7 +1868,6 @@ bool OBSBasic::InitBasicConfigDefaults()
 }
 
 extern bool EncoderAvailable(const char *encoder);
-extern bool update_nvenc_presets(ConfigFile &config);
 
 void OBSBasic::InitBasicConfigDefaults2()
 {
@@ -1894,9 +1892,6 @@ void OBSBasic::InitBasicConfigDefaults2()
 				  aac_default);
 	config_set_default_string(basicConfig, "AdvOut", "RecAudioEncoder",
 				  aac_default);
-
-	if (update_nvenc_presets(basicConfig))
-		config_save_safe(basicConfig, "tmp", nullptr);
 }
 
 bool OBSBasic::InitBasicConfig()
