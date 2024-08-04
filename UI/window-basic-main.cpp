@@ -329,6 +329,8 @@ OBSBasic::OBSBasic(QWidget *parent)
 
 	setContextMenuPolicy(Qt::CustomContextMenu);
 
+	QEvent::registerEventType(QEvent::User + QEvent::Close);
+
 	api = InitializeAPIInterface(this);
 
 	ui->setupUi(this);
@@ -9068,10 +9070,10 @@ void OBSBasic::CenterSelectedSceneItems(const CenterType &centerType)
 
 		GetItemBox(item, tl, br);
 
-		left = (std::min)(tl.x, left);
-		top = (std::min)(tl.y, top);
-		right = (std::max)(br.x, right);
-		bottom = (std::max)(br.y, bottom);
+		left = std::min(tl.x, left);
+		top = std::min(tl.y, top);
+		right = std::max(br.x, right);
+		bottom = std::max(br.y, bottom);
 	}
 
 	center.x = (right + left) / 2.0f;
