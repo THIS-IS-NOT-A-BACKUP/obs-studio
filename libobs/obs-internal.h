@@ -1315,7 +1315,7 @@ struct obs_encoder {
 	 * up at the specific timestamp.  if this is the audio encoder,
 	 * it waits until it's ready to sync up with video */
 	bool first_received;
-	DARRAY(struct obs_encoder *) paired_encoders;
+	DARRAY(struct obs_weak_encoder *) paired_encoders;
 	int64_t offset_usec;
 	uint64_t first_raw_ts;
 	uint64_t start_ts;
@@ -1325,8 +1325,6 @@ struct obs_encoder {
 
 	pthread_mutex_t outputs_mutex;
 	DARRAY(obs_output_t *) outputs;
-
-	bool destroy_on_stop;
 
 	/* stores the video/audio media output pointer.  video_t *or audio_t **/
 	void *media;
