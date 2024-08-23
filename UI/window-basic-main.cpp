@@ -3787,14 +3787,7 @@ void OBSBasic::HideAudioControl()
 
 	if (!SourceMixerHidden(source)) {
 		SetSourceMixerHidden(source, true);
-
-		/* Due to a bug with QT 6.2.4, the version that's in the Ubuntu
-		* 22.04 ppa, hiding the audio mixer causes a crash, so defer to
-		* the next event loop to hide it. Doesn't seem to be a problem
-		* with newer versions of QT. */
-		QMetaObject::invokeMethod(this, "DeactivateAudioSource",
-					  Qt::QueuedConnection,
-					  Q_ARG(OBSSource, OBSSource(source)));
+		DeactivateAudioSource(source);
 	}
 }
 
@@ -7705,26 +7698,11 @@ void OBSBasic::AutoRemux(QString input, bool no_show)
 	const char *format = config_get_string(
 		config, isSimpleMode ? "SimpleOutput" : "AdvOut", "RecFormat2");
 
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(60, 5, 100)
-	const obs_encoder_t *audioEncoder =
-		obs_output_get_audio_encoder(outputHandler->fileOutput, 0);
-	const char *aCodecName = obs_encoder_get_codec(audioEncoder);
-	bool audio_is_pcm = strncmp(aCodecName, "pcm", 3) == 0;
-
-	/* FFmpeg <= 6.0 cannot remux AV1+PCM into any supported format. */
-	if (audio_is_pcm && strcmp(vCodecName, "av1") == 0)
-		return;
-#endif
-
 	/* Retain original container for fMP4/fMOV */
 	if (strncmp(format, "fragmented", 10) == 0) {
 		output += "remuxed." + suffix;
 	} else if (strcmp(vCodecName, "prores") == 0) {
 		output += "mov";
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(60, 5, 100)
-	} else if (audio_is_pcm) {
-		output += "mov";
-#endif
 	} else {
 		output += "mp4";
 	}
