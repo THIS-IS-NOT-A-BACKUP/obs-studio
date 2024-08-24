@@ -1023,7 +1023,11 @@ void OBSBasic::CreateFirstRunSources()
 	bool hasInputAudio = HasAudioDevices(App()->InputAudioSource());
 
 #ifdef __APPLE__
-	hasDesktopAudio = hasDesktopAudio && shouldCreateDefaultAudioSource();
+	/* On macOS 13 and above, the SCK based audio capture provides a
+	 * better alternative to the device-based audio capture. */
+	if (__builtin_available(macOS 13.0, *)) {
+		hasDesktopAudio = false;
+	}
 #endif
 
 	if (hasDesktopAudio)
@@ -1993,7 +1997,7 @@ void OBSBasic::InitOBSCallbacks()
 {
 	ProfileScope("OBSBasic::InitOBSCallbacks");
 
-	signalHandlers.reserve(signalHandlers.size() + 7);
+	signalHandlers.reserve(signalHandlers.size() + 9);
 	signalHandlers.emplace_back(obs_get_signal_handler(), "source_create",
 				    OBSBasic::SourceCreated, this);
 	signalHandlers.emplace_back(obs_get_signal_handler(), "source_remove",
@@ -2014,13 +2018,17 @@ void OBSBasic::InitOBSCallbacks()
 	signalHandlers.emplace_back(
 		obs_get_signal_handler(), "source_filter_add",
 		[](void *data, calldata_t *) {
-			static_cast<OBSBasic *>(data)->UpdateEditMenu();
+			QMetaObject::invokeMethod(static_cast<OBSBasic *>(data),
+						  "UpdateEditMenu",
+						  Qt::QueuedConnection);
 		},
 		this);
 	signalHandlers.emplace_back(
 		obs_get_signal_handler(), "source_filter_remove",
 		[](void *data, calldata_t *) {
-			static_cast<OBSBasic *>(data)->UpdateEditMenu();
+			QMetaObject::invokeMethod(static_cast<OBSBasic *>(data),
+						  "UpdateEditMenu",
+						  Qt::QueuedConnection);
 		},
 		this);
 }
