@@ -1768,19 +1768,6 @@ void obs_encoder_packet_create_instance(struct encoder_packet *dst,
 	memcpy(dst->data, src->data, src->size);
 }
 
-/* OBS_DEPRECATED */
-void obs_duplicate_encoder_packet(struct encoder_packet *dst,
-				  const struct encoder_packet *src)
-{
-	obs_encoder_packet_create_instance(dst, src);
-}
-
-/* OBS_DEPRECATED */
-void obs_free_encoder_packet(struct encoder_packet *packet)
-{
-	obs_encoder_packet_release(packet);
-}
-
 void obs_encoder_packet_ref(struct encoder_packet *dst,
 			    struct encoder_packet *src)
 {
@@ -1825,14 +1812,6 @@ obs_encoder_get_preferred_video_format(const obs_encoder_t *encoder)
 		return VIDEO_FORMAT_NONE;
 
 	return encoder->preferred_format;
-}
-
-void obs_encoder_addref(obs_encoder_t *encoder)
-{
-	if (!encoder)
-		return;
-
-	obs_ref_addref(&encoder->context.control->ref);
 }
 
 void obs_encoder_release(obs_encoder_t *encoder)
