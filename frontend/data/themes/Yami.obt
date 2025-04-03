@@ -434,9 +434,8 @@ QDoubleSpinBox {
     margin-bottom: var(--spacing_input);
 }
 
-QListWidget QWidget,
-SceneTree QWidget,
-SourceTree QWidget {
+QListView QWidget,
+QListWidget QWidget {
     margin-top: 0;
     margin-bottom: 0;
 }
@@ -465,12 +464,16 @@ QToolTip {
 
 /* Context Menu */
 
+QMenu::indicator {
+    left: var(--padding_large);
+}
+
 QMenu::icon {
-    left: 4px;
+    left: var(--padding_xlarge);
 }
 
 QMenu::separator {
-    background: var(--button_bg);
+    background: var(--border_color);
     height: 1px;
     margin: var(--spacing_base) var(--spacing_large);
 }
@@ -502,83 +505,73 @@ QListWidget::item {
     color: var(--text);
 }
 
+QListView,
 QListWidget,
-QMenu,
-SceneTree,
-SourceTree {
+QMenu {
     padding: var(--spacing_base);
 }
 
+QMenu {
+    border: 1px solid var(--border_color);
+}
+
 QListWidget::item,
-SourceTreeItem,
-SceneTree::item {
+SourceTreeItem {
     padding: var(--padding_large) var(--padding_large);
 }
 
 QMenu::item {
     padding: var(--padding_large) var(--padding_menu);
-}
-
-QMenu::item {
     padding-right: 20px;
 }
 
+QListView::item,
 QListWidget::item,
-SourceTreeItem,
-QMenu::item,
-SceneTree::item {
+QMenu::item {
     border-radius: var(--border_radius);
     color: var(--text);
 }
 
-SourceTree::item {
+SourceTreeItem {
     border-radius: var(--border_radius);
     color: var(--text);
 }
 
 QMenu::item:selected,
-QListWidget::item:selected,
-SceneTree::item:selected,
-SourceTree::item:selected {
+QListView::item:selected,
+QListWidget::item:selected {
     background-color: var(--primary);
 }
 
 QMenu::item:hover,
+QListView::item:hover,
 QListWidget::item:hover,
-SceneTree::item:hover,
-SourceTree::item:hover,
 QMenu::item:selected:hover,
-QListWidget::item:selected:hover,
-SceneTree::item:selected:hover,
-SourceTree::item:selected:hover {
+QListView::item:selected:hover,
+QListWidget::item:selected:hover {
     background-color: var(--primary_light);
     color: var(--text);
 }
 
 QMenu::item:focus,
+QListView::item:focus,
 QListWidget::item:focus,
-SceneTree::item:focus,
-SourceTree::item:focus,
 QMenu::item:selected:focus,
-QListWidget::item:selected:focus,
-SceneTree::item:selected:focus,
-SourceTree::item:selected:focus {
+QListView::item:selected:focus,
+QListWidget::item:selected:focus {
     border: 1px solid var(--border_highlight);
 }
 
+QListView::item:disabled,
+QListView::item:disabled:hover,
 QListWidget::item:disabled,
-QListWidget::item:disabled:hover,
-SourceTree::item:disabled,
-SourceTree::item:disabled:hover,
-SceneTree::item:disabled,
-SceneTree::item:disabled:hover {
+QListWidget::item:disabled:hover {
     background: transparent;
     color: var(--text_disabled);
 }
 
-QListWidget QLineEdit,
-SceneTree QLineEdit,
-SourceTree QLineEdit {
+QListView QLineEdit,
+QListWidget QLineEdit {
     padding: 0;
     padding-bottom: 1px;
     margin: 0;
@@ -586,23 +579,12 @@ SourceTree QLineEdit {
     border-radius: var(--border_radius);
 }
 
-QListWidget QLineEdit:focus,
-SceneTree QLineEdit:focus,
-SourceTree QLineEdit:focus {
+QListView QLineEdit:focus,
+QListWidget QLineEdit:focus {
     border: 1px solid var(--grey1);
 }
 
 /* Settings QList */
-
-OBSBasicSettings QListWidget {
-    border-radius: var(--border_radius);
-    padding: var(--spacing_base);
-}
-
-OBSBasicSettings QListWidget::item {
-    border-radius: var(--border_radius);
-    padding: var(--padding_large);
-}
 
 OBSBasicSettings QScrollBar:vertical {
     width: var(--settings_scrollbar_size);
@@ -917,6 +899,16 @@ QDateTimeEdit {
     padding-left: 10px;
 }
 
+QComboBox QAbstractItemView {
+    padding: var(--spacing_base) var(--spacing_large);
+    border: 1px solid var(--border_color);
+    outline: none;
+}
+
+QComboBox QAbstractItemView::item {
+    padding: var(--padding_large) var(--padding_xlarge);
+}
+
 QComboBox QAbstractItemView::item:selected,
 QComboBox QAbstractItemView::item:hover {
     background-color: var(--list_item_bg_selected);
@@ -927,6 +919,11 @@ QComboBox:focus,
 QDateTimeEdit:hover,
 QDateTimeEdit:selected {
     border-color: var(--input_border_hover);
+}
+
+QComboBox:on {
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
 }
 
 QComboBox::drop-down,
@@ -1485,16 +1482,6 @@ OBSQTDisplay {
 
 /* Filters Window */
 
-OBSBasicFilters QListWidget {
-    border-radius: var(--border_radius_large);
-    padding: var(--spacing_base);
-}
-
-OBSBasicFilters QListWidget::item {
-    border-radius: var(--border_radius);
-    padding: var(--padding_base) var(--padding_large);
-}
-
 OBSBasicFilters #widget,
 OBSBasicFilters #widget_2 {
     margin: 0px;
@@ -1535,7 +1522,8 @@ OBSBasicSettings {
 /* Checkboxes */
 
 QCheckBox::indicator,
-QGroupBox::indicator {
+QGroupBox::indicator,
+QTableView::indicator {
     width: var(--icon_base);
     height: var(--icon_base);
 }
@@ -1545,33 +1533,39 @@ QGroupBox::indicator {
 }
 
 QCheckBox::indicator:unchecked,
-QGroupBox::indicator:unchecked {
+QGroupBox::indicator:unchecked,
+QTableView::indicator:unchecked {
     image: url(theme:Yami/checkbox_unchecked.svg);
 }
 
 QCheckBox::indicator:unchecked:hover,
-QGroupBox::indicator:unchecked:hover {
+QGroupBox::indicator:unchecked:hover,
+QTableView::indicator:unchecked:hover {
     border: none;
     image: url(theme:Yami/checkbox_unchecked_focus.svg);
 }
 
 QCheckBox::indicator:checked,
-QGroupBox::indicator:checked {
+QGroupBox::indicator:checked,
+QTableView::indicator:checked {
     image: url(theme:Yami/checkbox_checked.svg);
 }
 
 QCheckBox::indicator:checked:hover,
-QGroupBox::indicator:checked:hover {
+QGroupBox::indicator:checked:hover,
+QTableView::indicator:checked:hover {
     image: url(theme:Yami/checkbox_checked_focus.svg);
 }
 
 QCheckBox::indicator:checked:disabled,
-QGroupBox::indicator:checked:disabled {
+QGroupBox::indicator:checked:disabled,
+QTableView::indicator:checked:disabled {
     image: url(theme:Yami/checkbox_checked_disabled.svg);
 }
 
 QCheckBox::indicator:unchecked:disabled,
-QGroupBox::indicator:unchecked:disabled {
+QGroupBox::indicator:unchecked:disabled,
+QTableView::indicator:unchecked:disabled {
     image: url(theme:Yami/checkbox_unchecked_disabled.svg);
 }
 
@@ -1724,6 +1718,10 @@ OBSHotkeyWidget QPushButton {
 }
 
 /* Source Icons */
+
+.source-icon {
+    margin-right: var(--spacing_large);
+}
 
 OBSBasic {
     qproperty-imageIcon: url(theme:Dark/sources/image.svg);
