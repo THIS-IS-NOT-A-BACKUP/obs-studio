@@ -1,5 +1,5 @@
 /******************************************************************************
-    Copyright (C) 2023 by Lain Bailey <lain@obsproject.com>
+    Copyright (C) 2023 by Dennis Sädtler <dennis@obsproject.com>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,20 +17,26 @@
 
 #pragma once
 
-#include "ui_OBSLogReply.h"
+#include <QFrame>
+#include <QLayout>
+#include <QPushButton>
+#include <QSpinBox>
 
-#include <QDialog>
+namespace idian {
 
-class OBSLogReply : public QDialog {
-	Q_OBJECT
-
-private:
-	std::unique_ptr<Ui::OBSLogReply> ui;
+class DoubleSpinBox : public QFrame {
+	Q_OBJECT;
 
 public:
-	OBSLogReply(QWidget *parent, const QString &url, const bool crash);
+	DoubleSpinBox(QWidget *parent = nullptr);
 
-private slots:
-	void on_copyURL_clicked();
-	void on_analyzeURL_clicked();
+	QDoubleSpinBox *spinBox() const { return sbox; }
+
+private:
+	QHBoxLayout *layout;
+	QPushButton *decr;
+	QPushButton *incr;
+	QDoubleSpinBox *sbox;
 };
+
+} // namespace idian
